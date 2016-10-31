@@ -2,7 +2,6 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from config.config import *
 
-
 app = Flask(__name__)
-# config for dev
+app.config.from_object(config_settings['development'])
 db = SQLAlchemy(app)
