@@ -1,10 +1,12 @@
+from flask_restful import Api
 from flask_script import Manager
 from flask_migrate import Migrate, MigrateCommand
+
 from app import app, db
 from app.bucketlists import AllBucketlists, BucketlistApi
 from app.items import BucketlistItem
 from app.users import RegisterUser, LoginUser
-from flask_restful import Api
+
 
 manager = Manager(app)
 api = Api(app)
