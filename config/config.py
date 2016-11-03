@@ -16,7 +16,6 @@ class TestingConfig(object):
     TESTING = True
     SQLALCHEMY_DATABASE_URI = "sqlite:///" + os.path.join(basedir, "test_bucketlist.db")
     SQLALCHEMY_TRACK_MODIFICATIONS = True
-    SECRET_KEY = "k9we213@#21tjuw"
 
 
 class DevelopmentConfig(object):
@@ -25,9 +24,9 @@ class DevelopmentConfig(object):
     TESTING = True
     SQLALCHEMY_DATABASE_URI = "sqlite:///" + os.path.join(basedir, "bucketlist.db")
     SQLALCHEMY_TRACK_MODIFICATIONS = True
-    SECRET_KEY = "k9we213@#21tjuw"
 
 config_settings = {
     'development': DevelopmentConfig,
-    'testing': TestingConfig
+    'testing': TestingConfig,
+    'SECRET_KEY': "k9we213@#21tjuw"
 }

@@ -1,8 +1,9 @@
 import os
 
 from app import db
+from config.config import config_settings
 from flask_sqlalchemy import SQLAlchemy
-
+from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 
 class User(db.Model):
     """ User Model """
@@ -10,6 +11,10 @@ class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(50), index=True)
     password = db.Column(db.String(30), index=True)
+
+    def generate_auth_token(self, expires_in=5000):
+        s = Serializer(config['SECRET_KEY'], expires_in=expires_in)
+        return s.dumps({'id': self.id}).decode('utf-8')
 
 
 class BucketList(db.Model):
