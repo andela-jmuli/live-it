@@ -6,12 +6,14 @@ from app import app, db
 from app.bucketlists import AllBucketlists, BucketlistApi
 from app.items import BucketlistItem
 from app.users import RegisterUser, LoginUser
+from app.utils import Home
 
 
 manager = Manager(app)
 api = Api(app)
 migrate = Migrate(app, db)
 
+api.add_resource(Home, "/api/v1/", endpoint="home")
 api.add_resource(RegisterUser, "/auth/register/", endpoint="register")
 api.add_resource(LoginUser, "/auth/login/", endpoint="login")
 api.add_resource(AllBucketlists, "/bucketlists/", endpoint="bucketlists")

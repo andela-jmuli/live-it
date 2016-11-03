@@ -6,6 +6,8 @@ class BucketlistItem(Resource):
         methods: GET, POST, PUT, DELETE
         url:
      """
+    def get(self):
+        pass
 
     def post(self):
         pass

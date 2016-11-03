@@ -9,7 +9,6 @@ class TestEndPoints(SuperTestCase):
         Methods: GET, PUT, POST, DELETE
       """
 
-
     def test_creation_of_a_bucketlist(self):
         """ Test for creation of a bucketlist """
         self.bucketlist = {"name":"tomorrowland", "description":"dance time"}
