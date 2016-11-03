@@ -1,46 +1,48 @@
 import os
 
 from app import db
-from flask.ext.sqlalchemy import SQLAlchemy
+from config.config import config_settings
+from flask_sqlalchemy import SQLAlchemy
+from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 
-
-class User(db.Models):
+class User(db.Model):
     """ User Model """
     __tablename__ = "users"
-    id = Column(db.Integer, primary_key=True)
-    username = Column(db.String(50), index=True)
-    password = Column(db.String(30), index=True)
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(50), index=True)
+    password = db.Column(db.String(30), index=True)
 
-    def __init__(self, username, password):
-        self.username = username
-        self.password = password
+    def generate_auth_token(self, expires_in=5000):
+        s = Serializer(config['SECRET_KEY'], expires_in=expires_in)
+        return s.dumps({'id': self.id}).decode('utf-8')
 
 
-class BucketList(db.Models):
+class BucketList(db.Model):
     """ BucketList Model """
     __tablename__ = 'bucketlists'
-    id = Column(db.Integer, primary_key=True)
-    name = Column(db.String(50), unique=True)
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(50), unique=True)
+    description = db.Column(db.Text)
     date_created = db.Column(db.DateTime, default=db.func.current_timestamp())
     date_modified = db.Column(db.DateTime, default=db.func.current_timestamp())
-    created_by = Column(db.Integer, db.ForeignKey('user.id'))
-    # user = db.relationship("User", backref='', lazy='')
+    created_by = db.Column(db.Integer, db.ForeignKey('users.id'))
 
-    def __init__(self, name, created_by):
-        self.name = name
-        self.created_by = created_by
+    user = db.relationship("User", backref=db.backref("users", lazy="dynamic"))
+
+    items = db.relationship("BucketListItem", backref=db.backref("bucketlist"))
 
 
-class BucketListItem(db.Models):
+class BucketListItem(db.Model):
     """ Bucketlist Item model """
     __tablename__ = 'items'
-    id = Column(db.Integer, primary_key=True)
-    name = Column(db.String(50), unique=True)
-    bucketlist_id = Column(db.Integer, db.ForeignKey('bucketlist.id'))
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(50), unique=True)
+    description = db.Column(db.Text)
+    bucketlist_id = db.Column(db.Integer, db.ForeignKey('bucketlists.id'))
+    created_by = db.Column(db.Integer, db.ForeignKey("users.id"))
     date_created = db.Column(db.DateTime, default=db.func.current_timestamp())
     date_modified = db.Column(db.DateTime, default=db.func.current_timestamp())
-    is_done = Column(db.Boolean, default=False)
+    is_done = db.Column(db.Boolean, default=False)
 
-    def __init__(self, name, bucketlist_id):
-        self.name = name
-        self.bucketlist_id = bucketlist_id
+    user = db.relationship("User", backref=db.backref("items", lazy="dynamic"))
+
