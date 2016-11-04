@@ -45,7 +45,12 @@ class AllBucketlists(Resource):
 
 
     def get(self):
-        pass
+        bucketlists = BucketList.query.all()
+        if bucketlists:
+            return marshal(bucketlists, bucketlists_serializer)
+        else:
+            message = {'message': 'the bucketlist does not exist'}
+            return message, 404
 
 
 class BucketlistApi(Resource):
