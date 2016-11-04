@@ -54,8 +54,13 @@ class BucketlistApi(Resource):
         url:
     """
 
-    def get(self):
-        pass
+    def get(self, id):
+        bucketlist = BucketList.query.filter_by(id=id).first()
+        if bucketlist:
+            return marshal(bucketlist, bucketlists_serializer)
+        else:
+            message = {'message': 'the bucketlist does not exist'}
+            return message, 404
 
     def put(self, id):
         bucketlist = BucketList.query.get(id)
@@ -84,5 +89,14 @@ class BucketlistApi(Resource):
             message = {'message': 'The bucketlist does not exist'}
             return e, 404
 
-    def delete(self):
-        pass
+    def delete(self, id):
+        bucketlist = BucketList.query.get(id)
+
+        if bucketlist:
+            BucketList.query.filter_by(id=id).delete()
+            db.session.commit()
+            message = {'message': 'The bucketlist has been successfully deleted'}
+            return message, 200
+        else:
+            message = {'message': 'The buckelist does not exist'}
+            return message, 400
