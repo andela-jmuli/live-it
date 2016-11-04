@@ -14,12 +14,12 @@ api = Api(app)
 migrate = Migrate(app, db)
 
 api.add_resource(Home, "/api/v1/", endpoint="home")
-api.add_resource(RegisterUser, "/auth/register/", endpoint="register")
-api.add_resource(LoginUser, "/auth/login/", endpoint="login")
-api.add_resource(AllBucketlists, "/bucketlists/", endpoint="bucketlists")
-api.add_resource(BucketlistApi, "/bucketlists/<id>", endpoint="single_bucket_list")
-api.add_resource(BucketlistItem, "/bucketlists/<id>/items/", endpoint="bucketlist_items")
-api.add_resource(BucketlistItem, "/bucketlists/<id>/items/<item_id>", endpoint="single_item")
+api.add_resource(RegisterUser, "/api/v1/auth/register/", endpoint="register")
+api.add_resource(LoginUser, "/api/v1/auth/login/", endpoint="login")
+api.add_resource(AllBucketlists, "/api/v1/bucketlists/", endpoint="bucketlists")
+api.add_resource(BucketlistApi, "/api/v1/bucketlists/<id>", endpoint="single_bucket_list")
+api.add_resource(BucketlistItem, "/api/v1/bucketlists/<id>/items/", endpoint="bucketlist_items")
+api.add_resource(BucketlistItem, "/api/v1/bucketlists/<id>/items/<item_id>", endpoint="single_item")
 
 
 manager.add_command('db', MigrateCommand)
