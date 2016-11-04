@@ -14,7 +14,7 @@ bucketlists_serializer = {
     "created_by" : fields.Integer
 }
 
-bucketlist_items_serializer = {
+items_serializer = {
     "id" : fields.Integer,
     "name" : fields.String,
     "bucketlist_id" : fields.Integer,
