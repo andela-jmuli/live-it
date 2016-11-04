@@ -78,8 +78,22 @@ class BucketlistItem(Resource):
             message = {'message': 'The bucketlist or item does not exist'}
             return e, 404
 
-    def get(self):
-        pass
+    def get(self, id, item_id):
+        item = BucketListItem.query.filter_by(id=id).first()
+        if item:
+            return marshal(item, items_serializer)
+        else:
+            message = {'message': 'the item does not exist'}
+            return message, 404
 
-    def delete(self):
-        pass
+    def delete(self, id, item_id):
+        item = BucketListItem.query.get(item_id)
+
+        if item:
+            BucketListItem.query.filter_by(id=item_id).delete()
+            db.session.commit()
+            message = {'message': 'The item has been successfully deleted'}
+            return message, 200
+        else:
+            message = {'message': 'The item does not exist'}
+            return message, 400
