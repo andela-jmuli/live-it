@@ -5,7 +5,8 @@ from flask_restful import reqparse
 from app import db
 from models import BucketList
 from serializers import bucketlists_serializer
-from flask import g, jsonify
+
+
 class AllBucketlists(Resource):
     """ Defines endpoints for method calls that affect all bucketlists
         methods: GET, POST
@@ -56,8 +57,32 @@ class BucketlistApi(Resource):
     def get(self):
         pass
 
-    def put(self):
-        pass
+    def put(self, id):
+        bucketlist = BucketList.query.get(id)
+
+        if bucketlist:
+            parser = reqparse.RequestParser()
+            parser.add_argument('name', type=str, help='A name is required')
+            parser.add_argument('description', type=str, default='')
+            args = parser.parse_args()
+
+            name = args["name"]
+            description = args["description"]
+
+            item_info = BucketList.query.filter_by(id=id).update(
+                {'name': name, 'description': description})
+
+            try:
+                db.session.commit()
+                message = {'message': 'Bucket List has been updated!'}
+                return message, 201
+
+            except Exception as e:
+                message = {'message': 'There was an error updating the bucketlist'}
+                return e
+        else:
+            message = {'message': 'The bucketlist does not exist'}
+            return e, 404
 
     def delete(self):
         pass
