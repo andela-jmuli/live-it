@@ -20,7 +20,7 @@ class SuperTestCase(TestCase):
         db.create_all()
 
         # Add dummy data for test purposes
-        user = User(username="testuser", password="master12")
+        user = User(username="testuser", password_hash="master12")
         b_list1 = BucketList(name="btest1", description="test one", created_by=1)
         b_list2 = BucketList(name="btest2", description="test two", created_by=1)
 

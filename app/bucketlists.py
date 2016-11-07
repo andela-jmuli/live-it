@@ -10,9 +10,11 @@ from serializers import bucketlists_serializer
 class AllBucketlists(Resource):
     """ Defines endpoints for method calls that affect all bucketlists
         methods: GET, POST
-        url:
+        url: api/v1/bucketlists/
      """
+
     def post(self):
+        """ Method to create new bucketlists """
         parser = reqparse.RequestParser()
         parser.add_argument('name', type=str, help='A name is required')
         parser.add_argument('description', type=str, default='')
@@ -45,6 +47,7 @@ class AllBucketlists(Resource):
 
 
     def get(self):
+        """ Method that gets all bucketlists """
         bucketlists = BucketList.query.all()
         if bucketlists:
             return marshal(bucketlists, bucketlists_serializer)
@@ -56,10 +59,13 @@ class AllBucketlists(Resource):
 class BucketlistApi(Resource):
     """ Defines methods that affects a single bucketlist
         methods: GET, PUT, DELETE
-        url:
+        url: url: api/v1/bucketlists/<bucketlist_id>
     """
 
     def get(self, id):
+        """
+        Method that gets a single bucketlist
+        """
         bucketlist = BucketList.query.filter_by(id=id).first()
         if bucketlist:
             return marshal(bucketlist, bucketlists_serializer)
@@ -68,6 +74,9 @@ class BucketlistApi(Resource):
             return message, 404
 
     def put(self, id):
+        """
+        Method that edits an existing bucketlist
+        """
         bucketlist = BucketList.query.get(id)
 
         if bucketlist:
@@ -95,6 +104,9 @@ class BucketlistApi(Resource):
             return e, 404
 
     def delete(self, id):
+        """
+        Method that deletes an existing bucketlist
+        """
         bucketlist = BucketList.query.get(id)
 
         if bucketlist:
