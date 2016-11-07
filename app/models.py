@@ -1,20 +1,40 @@
 import os
-
+from . import app
 from app import db
 from config.config import config_settings
 from flask_sqlalchemy import SQLAlchemy
-from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
+from itsdangerous import (TimedJSONWebSignatureSerializer as Serializer, BadSignature, SignatureExpired)
+from werkzeug.security import generate_password_hash, check_password_hash
+
 
 class User(db.Model):
     """ User Model """
     __tablename__ = "users"
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(50), index=True)
-    password = db.Column(db.String(30), index=True)
+    password_hash = db.Column(db.String(128))
 
-    def generate_auth_token(self, expires_in=5000):
-        s = Serializer(config['SECRET_KEY'], expires_in=expires_in)
+    def set_password(self, password):
+        self.password_hash = generate_password_hash(password)
+
+    def verify_password(self, password):
+        return check_password_hash(self.password_hash, password)
+
+    def generate_auth_token(self, expires_in=600):
+        s = Serializer(config_settings['SECRET_KEY'], expires_in=expires_in)
         return s.dumps({'id': self.id}).decode('utf-8')
+
+    @staticmethod
+    def verify_auth_token(token):
+        s = Serializer(config_settings['SECRET_KEY'])
+        try:
+            data = s.loads(token)
+        except SignatureExpired:
+            return None
+        except BadSignature:
+            return None
+        user = User.query.get(data['id'])
+        return user
 
 
 class BucketList(db.Model):
