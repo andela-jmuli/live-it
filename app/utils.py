@@ -6,17 +6,21 @@ from itsdangerous import (TimedJSONWebSignatureSerializer as Serializer, BadSign
 
 from app import app
 from config.config import config_settings
-from models import User
+from models import User, BucketList, BucketListItem
 
 auth = HTTPBasicAuth()
 token_auth = HTTPTokenAuth(scheme='Token')
+current_user = {
+    'user_id': None
+}
 
 @auth.error_handler
 def auth_error(message=None):
     ''' This method returns an error message in cases of authentication errors '''
     if not message:
-        message = {'message': 'you are not allowed to make this request'}
+        message = {'message': 'you are not authorized to make this request'}
         return message
+
 
 @token_auth.verify_token
 def verify_token(token):
@@ -31,15 +35,38 @@ def verify_token(token):
         message = {'message': 'Bad or invalid token!'}
         return None
     user = User.query.get(data['id'])
+    current_user['user_id'] = user.id
     return user
+
 
 def current_user_bucketlist(fuction):
     ''' This method check's whether a user is authorized to access and manipulate a bucketlist '''
-    pass
+
+    def auth_wrapper(*args, **kwargs):
+        g.bucketlist = BucketList.query.filter_by(id=kwargs["id"]).first()
+        try:
+            if g.bucketlist.created_by == g.user.id:
+                return function(*args, **kwargs)
+            return auth_error()
+        except:
+            return auth_error('The bucketlist does not exist')
+
+    return auth_wrapper
+
 
 def current_user_blist_items(fuction):
     ''' This method checks whether a user is authorized to access and manipulate a bucketlist item '''
-    pass
+
+    def auth_wrapper(*args, **kwargs):
+        bucketlist_item = BucketListItem.query.filter_by(id=kwargs["id"]).first()
+        try:
+            if bucketlist_item.created_by == g.user.id:
+                return fuction(*args, **kwargs)
+            return auth_error()
+        except:
+            return auth_error('The bucketlist item does not exist')
+
+    return auth_wrapper
 
 
 class Home(Resource):
@@ -47,5 +74,6 @@ class Home(Resource):
     Returns welcome message to new user
     url: /api/v1/
     """
+
     def get(self):
         return {"message": "Welcome to live-it! To get started, register a new user or login"}
