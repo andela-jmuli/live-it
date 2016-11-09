@@ -8,51 +8,23 @@ from app import app
 from config.config import config_settings
 from models import User, BucketList, BucketListItem
 
-auth = HTTPBasicAuth()
+auth = HTTPBasicAuth(scheme='Token')
 token_auth = HTTPTokenAuth(scheme='Token')
-current_user = {
-    'user_id': None
-}
 
-@auth.error_handler
-def auth_error(message=None):
-    ''' This method returns an error message in cases of authentication errors '''
-    if not message:
-        message = {'message': 'you are not authorized to make this request'}
-        return message
-
-
-@token_auth.verify_token
-def verify_token(token):
-    ''' This method verifies the token provided in a request header '''
-    s = Serializer(config_settings['SECRET_KEY'])
-    try:
-        data = s.loads(token)
-    except SignatureExpired:
-        message = {'message': 'The token has expired'}
-        return message
-    except BadSignature:
-        message = {'message': 'Bad or invalid token!'}
-        return None
-    user = User.query.get(data['id'])
-    current_user['user_id'] = user.id
-    return user
-
-
-def current_user_bucketlist(fuction):
+def current_user_bucketlist(function):
     ''' This method check's whether a user is authorized to access and manipulate a bucketlist '''
 
     def auth_wrapper(*args, **kwargs):
         g.bucketlist = BucketList.query.filter_by(id=kwargs["id"]).first()
-        try:
-            if g.bucketlist.created_by == g.user.id:
-                return function(*args, **kwargs)
-            return auth_error()
-        except:
-            return auth_error('The bucketlist does not exist')
+        # try:
+        if g.bucketlist.created_by == g.user.id:
+            return function(*args, **kwargs)
+        message = {'message':'You are not authorized'}
+        return message
+        # except:
+            # return 'The bucketlist does not exist'
 
     return auth_wrapper
-
 
 def current_user_blist_items(fuction):
     ''' This method checks whether a user is authorized to access and manipulate a bucketlist item '''
@@ -67,6 +39,24 @@ def current_user_blist_items(fuction):
             return auth_error('The bucketlist item does not exist')
 
     return auth_wrapper
+
+@app.before_request
+def before_request():
+    """
+    This method validates a user's token and creates a global user object to be accessed by methods and requests
+    """
+    if request.endpoint not in ['home', 'register', 'login']:
+        token = request.headers.get('Token')
+        if token is not None:
+            user = User.verify_token(token)
+            if user:
+                g.user = user
+            else:
+                message = {'message': 'The token entered is invalid!'}
+                return message, 400
+        else:
+            message = {'message': 'Please provide a token'}
+            return message, 401
 
 
 class Home(Resource):
