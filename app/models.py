@@ -24,6 +24,19 @@ class User(db.Model):
         s = Serializer(config_settings['SECRET_KEY'], expires_in=expires_in)
         return s.dumps({'id': self.id}).decode('utf-8')
 
+    @staticmethod
+    def verify_token(token):
+        s = Serializer(config_settings['SECRET_KEY'])
+        try:
+            data = s.loads(token)
+        except SignatureExpired:
+            return 'The token has expired'
+        except BadSignature:
+            return 'Bad or invalid token!'
+
+        user = User.query.get(data['id'])
+        return user
+
 
 class BucketList(db.Model):
     """ BucketList Model """

@@ -16,13 +16,15 @@ def current_user_bucketlist(function):
 
     def auth_wrapper(*args, **kwargs):
         g.bucketlist = BucketList.query.filter_by(id=kwargs["id"]).first()
-        # try:
-        if g.bucketlist.created_by == g.user.id:
-            return function(*args, **kwargs)
-        message = {'message':'You are not authorized'}
-        return message
-        # except:
-            # return 'The bucketlist does not exist'
+        try:
+            if g.bucketlist:
+                if g.bucketlist.created_by == g.user.id:
+                    return function(*args, **kwargs)
+                return 'You are not authorized'
+            else:
+                return 'The bucketlist does not exist', 404
+        except:
+            return 'Please check your token', 401
 
     return auth_wrapper
 
@@ -32,11 +34,14 @@ def current_user_blist_items(fuction):
     def auth_wrapper(*args, **kwargs):
         bucketlist_item = BucketListItem.query.filter_by(id=kwargs["id"]).first()
         try:
-            if bucketlist_item.created_by == g.user.id:
-                return fuction(*args, **kwargs)
-            return auth_error()
+            if bucketlist_item:
+                if bucketlist_item.created_by == g.user.id:
+                    return fuction(*args, **kwargs)
+                return auth_error()
+            else:
+                return 'The bucketlist item does not exist', 404
         except:
-            return auth_error('The bucketlist item does not exist')
+            return 'Please check your token', 401
 
     return auth_wrapper
 
