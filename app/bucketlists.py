@@ -1,10 +1,14 @@
 from flask import g, jsonify
+from flask_httpauth import HTTPBasicAuth, HTTPTokenAuth
 from flask_restful import Resource, marshal
 from flask_restful import reqparse
 
 from app import db
 from models import BucketList
 from serializers import bucketlists_serializer
+from utils import current_user_bucketlist, token_auth
+
+auth = HTTPTokenAuth(scheme='Token')
 
 
 class AllBucketlists(Resource):
@@ -21,12 +25,13 @@ class AllBucketlists(Resource):
         args = parser.parse_args()
         name = args["name"]
         description = args["description"]
-        b_list = BucketList(name=name, description=description)
+        print('****************')
+        print(g.user)
+        b_list = BucketList(name=name, description=description, created_by=g.user.id)
 
         if not name:
             message = {'message': 'Please provide a name for the bucketlist'}
             return message, 400
-
         try:
             BucketList.query.filter_by(name=name).one()
             message = {'message': 'That name is already taken, try again'}
@@ -45,7 +50,6 @@ class AllBucketlists(Resource):
                 response.status_code = 400
                 return e
 
-
     def get(self):
         """ Method that gets all bucketlists """
         bucketlists = BucketList.query.all()
@@ -62,17 +66,20 @@ class BucketlistApi(Resource):
         url: url: api/v1/bucketlists/<bucketlist_id>
     """
 
+    @current_user_bucketlist
     def get(self, id):
         """
         Method that gets a single bucketlist
         """
         bucketlist = BucketList.query.filter_by(id=id).first()
         if bucketlist:
-            return marshal(bucketlist, bucketlists_serializer)
+            response = marshal(bucketlist, bucketlists_serializer)
+            return response
         else:
-            message = {'message': 'the bucketlist does not exist'}
-            return message, 404
+            response = {'message': 'the bucketlist does not exist'}
+            return response, 404
 
+    @current_user_bucketlist
     def put(self, id):
         """
         Method that edits an existing bucketlist
@@ -103,6 +110,7 @@ class BucketlistApi(Resource):
             message = {'message': 'The bucketlist does not exist'}
             return e, 404
 
+    @current_user_bucketlist
     def delete(self, id):
         """
         Method that deletes an existing bucketlist
