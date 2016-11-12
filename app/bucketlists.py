@@ -25,8 +25,7 @@ class AllBucketlists(Resource):
         args = parser.parse_args()
         name = args["name"]
         description = args["description"]
-        print('****************')
-        print(g.user)
+
         b_list = BucketList(name=name, description=description, created_by=g.user.id)
 
         if not name:
@@ -45,6 +44,7 @@ class AllBucketlists(Resource):
                 response = marshal(b_list, bucketlists_serializer)
                 response.update(message)
                 return response, 201
+
             except Exception as e:
                 response = jsonify({'message': 'There was an error saving the bucketlist'})
                 response.status_code = 400
@@ -108,7 +108,7 @@ class BucketlistApi(Resource):
                 return e
         else:
             message = {'message': 'The bucketlist does not exist'}
-            return e, 404
+            return message, 404
 
     @current_user_bucketlist
     def delete(self, id):

@@ -9,6 +9,7 @@ users_serializer = {
 bucketlists_serializer = {
     "id" : fields.Integer,
     "name" : fields.String,
+    "description" : fields.String,
     "date_created" : fields.DateTime,
     "date_modified" : fields.DateTime,
     "created_by" : fields.Integer

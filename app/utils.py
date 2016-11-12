@@ -37,7 +37,7 @@ def current_user_blist_items(fuction):
             if bucketlist_item:
                 if bucketlist_item.created_by == g.user.id:
                     return fuction(*args, **kwargs)
-                return auth_error()
+                return 'You are not authorized'
             else:
                 return 'The bucketlist item does not exist', 404
         except:
@@ -51,7 +51,7 @@ def before_request():
     This method validates a user's token and creates a global user object to be accessed by methods and requests
     """
     if request.endpoint not in ['home', 'register', 'login']:
-        token = request.headers.get('Token')
+        token = request.headers.get('token')
         if token is not None:
             user = User.verify_token(token)
             if user:

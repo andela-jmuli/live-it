@@ -20,7 +20,7 @@ class User(db.Model):
     def verify_password(self, password):
         return check_password_hash(self.password_hash, password)
 
-    def generate_auth_token(self, expires_in=600):
+    def generate_auth_token(self, expires_in=10000):
         s = Serializer(config_settings['SECRET_KEY'], expires_in=expires_in)
         return s.dumps({'id': self.id}).decode('utf-8')
 
@@ -30,9 +30,9 @@ class User(db.Model):
         try:
             data = s.loads(token)
         except SignatureExpired:
-            return 'The token has expired'
+            return 'Expired!'
         except BadSignature:
-            return 'Bad or invalid token!'
+            return None
 
         user = User.query.get(data['id'])
         return user

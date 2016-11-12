@@ -5,8 +5,10 @@ import os
 from app.models import User, BucketList, BucketListItem
 from config.config import config_settings
 from manage import app, db
+import json
 
 basedir = os.path.abspath(os.path.dirname(__file__))
+
 
 class SuperTestCase(TestCase):
 
@@ -20,7 +22,8 @@ class SuperTestCase(TestCase):
         db.create_all()
 
         # Add dummy data for test purposes
-        user = User(username="testuser", password_hash="master12")
+        user = User(username="testuser")
+        user.set_password('master12')
         b_list1 = BucketList(name="btest1", description="test one", created_by=1)
         b_list2 = BucketList(name="btest2", description="test two", created_by=1)
 
@@ -33,6 +36,13 @@ class SuperTestCase(TestCase):
         db.session.add(b_item1)
         db.session.add(b_item2)
         db.session.commit()
+
+    def make_token(self):
+        self.user_data = {'username':'testuser', 'password':'master12'}
+        response = self.app.post("api/v1/auth/login", data=self.user_data)
+        output = json.loads(response.data)
+        token = output.get("token").encode("ascii")
+        return {'token':token}
 
     def tearDown(self):
         db.session.remove()

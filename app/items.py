@@ -12,7 +12,6 @@ class BucketlistItem(Resource):
         methods: GET, POST, PUT, DELETE
         url: /api/v1/bucketlists/<bucketlist_id>/items
      """
-
     def post(self, id):
         bucketlist = BucketList.query.get(id)
         if bucketlist:
