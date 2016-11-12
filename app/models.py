@@ -66,4 +66,3 @@ class BucketListItem(db.Model):
     is_done = db.Column(db.Boolean, default=False)
 
     user = db.relationship("User", backref=db.backref("items", lazy="dynamic"))
-

@@ -53,43 +53,51 @@ class AllBucketlists(Resource):
     def get(self):
         """ Method that gets all bucketlists """
         args = request.args.to_dict()
-        page = int(args.get('page', 1)) # query start
+        page = int(args.get('page', 1)) # query start as an integer
         limit = int(args.get('limit', 20)) # 100 items == 20 per page for 5 pages
+        q = args.get('q')
 
-        # query a paginate object
-        b_lists = BucketList.query.filter_by(created_by=g.user.id).paginate(
-        page,limit, False)
-
-        all_pages = b_lists.pages # get total page count
-        next_pg = b_lists.has_next # check for next page
-        previous_pg = b_lists.has_prev # check for previous page
-
-        # if the query allows a max over the limit, generate a url for the next page
-        if next_pg:
-            next_page = str(request.url_root) + 'api/v1/bucketlists?' + \
-            'limit=' + str(limit) + '&page=' + str(page + 1)
+        if q:
+            b_lists = BucketList.query.filter(BucketList.name.contains(q)).filter_by(
+            created_by=g.user.id).paginate(page, limit, False)
+            if len(b_lists) < 0:
+                message = {'message':'No bucketlists with that query...'}
+                return message, 404
         else:
-            next_page = 'None'
+            # query a paginate object
+            b_lists = BucketList.query.filter_by(created_by=g.user.id).paginate(
+            page,limit, False)
 
-        # set a url for the previous page
-        if previous_pg:
-            previous_page = str(request.url_root) + 'api/v1/bucketlists?' + \
-            'limit=' + str(limit) + '&page=' + str(page - 1)
-        else:
-            previous_page = 'None'
+            all_pages = b_lists.pages # get total page count
+            next_pg = b_lists.has_next # check for next page
+            previous_pg = b_lists.has_prev # check for previous page
 
-        b_lists = b_lists.items
+            # if the query allows a max over the limit, generate a url for the next page
+            if next_pg:
+                next_page = str(request.url_root) + 'api/v1/bucketlists?' + \
+                'limit=' + str(limit) + '&page=' + str(page + 1)
+            else:
+                next_page = 'None'
 
-        data = {'bucketlists': marshal(b_lists, bucketlists_serializer),
-                'total pages': all_pages,
-                'next page': next_page,
-                'previous page': previous_page }
-        # if bucketlists are note None, return data as output
-        if b_lists:
-            return data
-        else:
-            message = {'message': 'There are no bucketlists available'}
-            return message, 404
+            # set a url for the previous page
+            if previous_pg:
+                previous_page = str(request.url_root) + 'api/v1/bucketlists?' + \
+                'limit=' + str(limit) + '&page=' + str(page - 1)
+            else:
+                previous_page = 'None'
+
+            b_lists = b_lists.items
+
+            data = {'bucketlists': marshal(b_lists, bucketlists_serializer),
+                    'total pages': all_pages,
+                    'next page': next_page,
+                    'previous page': previous_page }
+            # if bucketlists are note None, return data as output
+            if b_lists:
+                return data
+            else:
+                message = {'message': 'There are no bucketlists available'}
+                return message, 404
 
 
 class BucketlistApi(Resource):
