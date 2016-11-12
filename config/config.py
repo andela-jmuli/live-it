@@ -13,6 +13,7 @@ class Config():
 class TestingConfig(object):
     " testing  configurations "
     DEBUG = True
+    PRESERVE_CONTEXT_ON_EXCEPTION = False
     TESTING = True
     SQLALCHEMY_DATABASE_URI = "sqlite:///" + os.path.join(basedir, "test_bucketlist.db")
     SQLALCHEMY_TRACK_MODIFICATIONS = True

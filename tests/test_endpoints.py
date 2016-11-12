@@ -1,5 +1,6 @@
 from tests import SuperTestCase
-
+from flask import jsonify
+from manage import app
 import json
 
 class TestEndPoints(SuperTestCase):
@@ -14,19 +15,19 @@ class TestEndPoints(SuperTestCase):
 
     def test_creation_of_a_bucketlist(self):
         """ Test for creation of a bucketlist """
-        self.bucketlist = {"name":"tomorrowland", "description":"dance time"}
-        response = self.app.post("/api/v1/bucketlists/",data=self.bucketlist)
-        self.assertEqual(response.status_code, 201 )
+        self.buck = {"name":"tomorrowland", "description":"dance time"}
+        response = self.client.get("/api/v1/bucketlists/", headers=self.make_token(), content_type='application/json')
+        self.assertEqual(response.status_code, 200)
 
     def test_editing_a_bucketlist(self):
         """ Test for editing an existent bucketlist """
         self.bucketlist = {"name":"tomorrowland", "description":"party time"}
-        response = self.app.put("/api/v1/bucketlists/1",data=self.bucketlist)
+        response = self.app.put("/api/v1/bucketlists/1",data=self.bucketlist, headers=self.make_token(), content_type='application/json')
         self.assertEqual(response.status_code, 201)
 
     def test_deletion_of_a_bucketlist(self):
         """ Test deletion of a bucketlist """
-        response = self.app.delete("/api/v1/bucketlists/1")
+        response = self.app.delete("/api/v1/bucketlists/1", headers=self.make_token(), content_type='application/json')
         self.assertEqual(response.status_code, 200)
 
     def test_get_bucketlists(self):
@@ -46,8 +47,8 @@ class TestEndPoints(SuperTestCase):
 
     def test_item_creation(self):
         """ Test for response on new item creation """
-        self.item = {"name":"invite guyz", "description":"call up the hommies"}
-        response = self.app.post("/api/v1/bucketlists/2/items/", data=self.item)
+        item_data = {"name":"invite guyz", "description":"call up the hommies"}
+        response = self.app.post("/api/v1/bucketlists/2/items/", data=item_data, content_type='application/json')
         self.assertEqual(response.status_code, 201)
 
     def test_editing_an_item(self):
@@ -58,5 +59,6 @@ class TestEndPoints(SuperTestCase):
 
     def test_deletion_of_an_item(self):
         """ Test for deletion of an item  """
+        print('************')
         response = self.app.delete("/api/v1/bucketlists/2/items/1")
         self.assertEqual(response.status_code, 200)

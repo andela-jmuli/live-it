@@ -5,7 +5,7 @@ from flask_restful import reqparse
 from app import db
 from models import BucketList,BucketListItem
 from serializers import items_serializer
-
+from utils import current_user_blist_items
 
 class BucketlistItem(Resource):
     """ Defines endpoints for bucketlist items manipulation
@@ -23,7 +23,7 @@ class BucketlistItem(Resource):
             name = args["name"]
             description = args["description"]
 
-            item = BucketListItem(name=name, description=description, bucketlist_id=id, created_by=1)
+            item = BucketListItem(name=name, description=description, bucketlist_id=id, created_by=g.user.id)
 
             if not name:
                 message = {'message': 'Please provide a name for the bucketlist'}
@@ -50,6 +50,7 @@ class BucketlistItem(Resource):
             message = {'message': 'A bucketlist with the ID provided does not exist!'}
             return message, 404
 
+    @current_user_blist_items
     def put(self, id, item_id):
         bucketlist = BucketList.query.get(id)
         item = BucketListItem.query.filter_by(id=item_id).one()
@@ -78,6 +79,7 @@ class BucketlistItem(Resource):
             message = {'message': 'The bucketlist or item does not exist'}
             return e, 404
 
+    @current_user_blist_items
     def get(self, id, item_id):
         item = BucketListItem.query.filter_by(id=id).first()
         if item:
@@ -86,6 +88,7 @@ class BucketlistItem(Resource):
             message = {'message': 'the item does not exist'}
             return message, 404
 
+    @current_user_blist_items
     def delete(self, id, item_id):
         item = BucketListItem.query.get(item_id)
 
