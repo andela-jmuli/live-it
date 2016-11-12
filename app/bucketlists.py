@@ -1,4 +1,4 @@
-from flask import g, jsonify
+from flask import g, jsonify, request
 from flask_httpauth import HTTPBasicAuth, HTTPTokenAuth
 from flask_restful import Resource, marshal
 from flask_restful import reqparse
@@ -52,11 +52,43 @@ class AllBucketlists(Resource):
 
     def get(self):
         """ Method that gets all bucketlists """
-        bucketlists = BucketList.query.all()
-        if bucketlists:
-            return marshal(bucketlists, bucketlists_serializer)
+        args = request.args.to_dict()
+        page = int(args.get('page', 1)) # query start
+        limit = int(args.get('limit', 20)) # 100 items == 20 per page for 5 pages
+
+        # query a paginate object
+        b_lists = BucketList.query.filter_by(created_by=g.user.id).paginate(
+        page,limit, False)
+
+        all_pages = b_lists.pages # get total page count
+        next_pg = b_lists.has_next # check for next page
+        previous_pg = b_lists.has_prev # check for previous page
+
+        # if the query allows a max over the limit, generate a url for the next page
+        if next_pg:
+            next_page = str(request.url_root) + 'api/v1/bucketlists?' + \
+            'limit=' + str(limit) + '&page=' + str(page + 1)
         else:
-            message = {'message': 'the bucketlist does not exist'}
+            next_page = 'None'
+
+        # set a url for the previous page
+        if previous_pg:
+            previous_page = str(request.url_root) + 'api/v1/bucketlists?' + \
+            'limit=' + str(limit) + '&page=' + str(page - 1)
+        else:
+            previous_page = 'None'
+
+        b_lists = b_lists.items
+
+        data = {'bucketlists': marshal(b_lists, bucketlists_serializer),
+                'total pages': all_pages,
+                'next page': next_page,
+                'previous page': previous_page }
+        # if bucketlists are note None, return data as output
+        if b_lists:
+            return data
+        else:
+            message = {'message': 'There are no bucketlists available'}
             return message, 404
 
 
