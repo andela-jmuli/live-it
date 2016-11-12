@@ -11,6 +11,20 @@ from models import User, BucketList, BucketListItem
 auth = HTTPBasicAuth(scheme='Token')
 token_auth = HTTPTokenAuth(scheme='Token')
 
+@auth.verify_password
+def authenticate_token(token):
+    user = User.verify_token(token)
+    if user:
+        g.user = user
+        return user
+    return False
+
+@auth.error_handler
+def unauthorized(message=None):
+    return make_response(jsonify({'Error':'Invalid token given, '
+     'Login again to gain access'}), 403 )
+
+
 def current_user_bucketlist(function):
     ''' This method check's whether a user is authorized to access and manipulate a bucketlist '''
 
@@ -53,7 +67,7 @@ def before_request():
     if request.endpoint not in ['home', 'register', 'login']:
         token = request.headers.get('token')
         if token is not None:
-            user = User.verify_token(token)
+            user = authenticate_token(token)
             if user:
                 g.user = user
             else:
