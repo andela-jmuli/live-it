@@ -1,1 +1,8 @@
-life/
+env/
+*.pyc
+.idea
+*.DS_Store
+*.db
+.tox/
+.coverage
+migrations/
