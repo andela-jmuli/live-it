@@ -34,11 +34,11 @@ def current_user_bucketlist(function):
             if g.bucketlist:
                 if g.bucketlist.created_by == g.user.id:
                     return function(*args, **kwargs)
-                return 'You are not authorized'
+                return 'You are not authorized', 401
             else:
                 return 'The bucketlist does not exist', 404
         except:
-            return 'Please check your token', 401
+            return 'Please check your token', 400
 
     return auth_wrapper
 
@@ -51,11 +51,11 @@ def current_user_blist_items(fuction):
             if bucketlist_item:
                 if bucketlist_item.created_by == g.user.id:
                     return fuction(*args, **kwargs)
-                return 'You are not authorized'
+                return 'You are not authorized', 401
             else:
                 return 'The bucketlist item does not exist', 404
         except:
-            return 'Please check your token', 401
+            return 'Please check your token', 400
 
     return auth_wrapper
 
