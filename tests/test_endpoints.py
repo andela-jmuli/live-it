@@ -55,9 +55,19 @@ class TestEndPoints(SuperTestCase):
         """ Test for editing an item """
         self.item = {"name":"learn the guitar", "description":"take guitar classes"}
         response = self.app.put("/api/v1/bucketlists/1/items/1", headers=self.make_token())
-        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.status_code, 200)
+
+    def test_editing_a_none_existing_item(self):
+        """ Test for editing an item """
+        self.item = {"name":"learn the guitar", "description":"take guitar classes"}
+        response = self.app.put("/api/v1/bucketlists/100/items/650", headers=self.make_token(), content_type='application/json')
+        self.assertEqual(response.status_code, 404)
 
     def test_deletion_of_an_item(self):
         """ Test for deletion of an item  """
         response = self.app.delete("/api/v1/bucketlists/2/items/1", headers=self.make_token(), content_type='application/json')
         self.assertEqual(response.status_code, 200)
+
+    def test_deletion_of_a_none_existent_item(self):
+        response = self.app.delete("/api/v1/bucketlists/2/items/300", headers=self.make_token(), content_type='application/json')
+        self.assertEqual(response.status_code, 404)
