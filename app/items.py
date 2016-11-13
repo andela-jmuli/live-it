@@ -10,9 +10,12 @@ from utils import current_user_blist_items
 class BucketlistItem(Resource):
     """ Defines endpoints for bucketlist items manipulation
         methods: GET, POST, PUT, DELETE
-        url: /api/v1/bucketlists/<bucketlist_id>/items
+        url: /api/v1/bucketlists/<bucketlist_id>/items/
      """
     def post(self, id):
+        """
+        request that handles bucketlist item creation
+        """
         bucketlist = BucketList.query.get(id)
         if bucketlist:
             parser = reqparse.RequestParser()
@@ -26,13 +29,15 @@ class BucketlistItem(Resource):
             item = BucketListItem(name=name, description=description, bucketlist_id=id, created_by=g.user.id)
 
             if not name:
-                message = {'message': 'Please provide a name for the bucketlist'}
-                return message, 400
+                response = jsonify({'message': 'Please provide a name for the bucketlist'})
+                response.status_code = 400
+                return response
 
             try:
                 BucketListItem.query.filter_by(name=name).one()
-                message = {'message': 'That name is already taken, try again'}
-                return message, 400
+                response = jsonify({'message': 'That name is already taken, try again'})
+                response.status_code = 400
+                return response
 
             except:
                 try:
@@ -44,11 +49,13 @@ class BucketlistItem(Resource):
                     return response, 201
 
                 except Exception as e:
-                    message = {'message': 'There was an error saving the item'}
-                    return message, 400
+                    response = jsonify({'message': 'There was an error saving the item'})
+                    response.status_code = 400
+                    return response
         else:
-            message = {'message': 'A bucketlist with the ID provided does not exist!'}
-            return message, 404
+            response = jsonify({'message': 'A bucketlist with the ID provided does not exist!'})
+            response.status_code = 404
+            return response
 
     @current_user_blist_items
     def put(self, id, item_id):
@@ -69,24 +76,34 @@ class BucketlistItem(Resource):
 
             try:
                 db.session.commit()
-                message = {'message': 'Bucket List item updated'}
-                return message, 201
+                response = jsonify({'message': 'Bucket List item updated'})
+                response.status_code = 200
+                return response
 
-            except Exception as e:
-                message = {'message': 'There was an error updating the item'}
-                return e
+            except Exception:
+                response = jsonify({'message': 'There was an error updating the item'})
+                response.status_code = 500
+                return response
         else:
-            message = {'message': 'The bucketlist or item does not exist'}
-            return e, 404
+            response = jsonify({'message': 'The bucketlist or item does not exist'})
+            response.status_code = 404
+            return response
 
     @current_user_blist_items
     def get(self, id, item_id):
-        item = BucketListItem.query.filter_by(id=id).first()
-        if item:
-            return marshal(item, items_serializer)
+        bucketlist = BucketList.query.filter_by(id=id).first()
+        item = BucketListItem.query.filter_by(id=item_id).first()
+        if bucketlist:
+            if item:
+                return marshal(item, items_serializer)
+            else:
+                response = jsonify({'message': 'the item does not exist'})
+                response.status_code = 404
+                return response
         else:
-            message = {'message': 'the item does not exist'}
-            return message, 404
+            response = jsonify({'message': 'the bucketlist does not exist'})
+            response.status_code = 404
+            return response
 
     @current_user_blist_items
     def delete(self, id, item_id):
@@ -95,8 +112,10 @@ class BucketlistItem(Resource):
         if item:
             BucketListItem.query.filter_by(id=item_id).delete()
             db.session.commit()
-            message = {'message': 'The item has been successfully deleted'}
-            return message, 200
+            response = jsonify({'message': 'The item has been successfully deleted'})
+            response.status_code = 200
+            return response
         else:
-            message = {'message': 'The item does not exist'}
-            return message, 400
+            response = jsonify({'message': 'The item does not exist'})
+            response.status_code = 404
+            return response

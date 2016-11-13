@@ -1,5 +1,5 @@
 from functools import wraps
-from flask import g, request
+from flask import g, jsonify, request
 from flask_httpauth import HTTPBasicAuth, HTTPTokenAuth
 from flask_restful import Resource
 from itsdangerous import (TimedJSONWebSignatureSerializer as Serializer, BadSignature, SignatureExpired)
@@ -24,45 +24,42 @@ def unauthorized(message=None):
     return make_response(jsonify({'Error':'Invalid token given, '
      'Login again to gain access'}), 403 )
 
-
 def current_user_bucketlist(function):
     ''' This method check's whether a user is authorized to access and manipulate a bucketlist '''
 
     def auth_wrapper(*args, **kwargs):
         g.bucketlist = BucketList.query.filter_by(id=kwargs["id"]).first()
         try:
-            if g.bucketlist:
-                if g.bucketlist.created_by == g.user.id:
-                    return function(*args, **kwargs)
-                return 'You are not authorized', 401
-            else:
-                return 'The bucketlist does not exist', 404
-        except:
-            return 'Please check your token', 400
+            if g.bucketlist.created_by == g.user.id:
+                return function(*args, **kwargs)
 
+            return 'You are not authorized', 401
+        except:
+            return 'The bucketlist does not exist', 404
     return auth_wrapper
 
 def current_user_blist_items(fuction):
     ''' This method checks whether a user is authorized to access and manipulate a bucketlist item '''
 
     def auth_wrapper(*args, **kwargs):
-        bucketlist_item = BucketListItem.query.filter_by(id=kwargs["id"]).first()
+        g.bucketlist_item = BucketListItem.query.filter_by(id=kwargs["id"]).first()
         try:
-            if bucketlist_item:
-                if bucketlist_item.created_by == g.user.id:
-                    return fuction(*args, **kwargs)
-                return 'You are not authorized', 401
-            else:
-                return 'The bucketlist item does not exist', 404
+            if g.bucketlist_item.created_by == g.user.id:
+                return fuction(*args, **kwargs)
+            response = jsonify({'message': 'You are not authorized'})
+            response.status_code = 401
+            return response
         except:
-            return 'Please check your token', 400
-
+            response = jsonify({'message': 'The item requested does not exist'})
+            response.status_code = 404
+            return response
     return auth_wrapper
 
 @app.before_request
 def before_request():
     """
     This method validates a user's token and creates a global user object to be accessed by methods and requests
+    The method runs before all requests, exceptional requests are 'home', 'register' and 'login'
     """
     if request.endpoint not in ['home', 'register', 'login']:
         token = request.headers.get('token')
@@ -82,7 +79,10 @@ class Home(Resource):
     """
     Returns welcome message to new user
     url: /api/v1/
+    method: GET
+    headers: None
     """
 
     def get(self):
-        return {"message": "Welcome to live-it! To get started, register a new user or login"}
+        response = jsonify({"message": "Welcome to live-it! To get started, register a new user or login"})
+        return response

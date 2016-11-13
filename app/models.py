@@ -49,7 +49,6 @@ class BucketList(db.Model):
     created_by = db.Column(db.Integer, db.ForeignKey('users.id'))
 
     user = db.relationship("User", backref=db.backref("users", lazy="dynamic"))
-
     items = db.relationship("BucketListItem", backref=db.backref("bucketlist"))
 
 

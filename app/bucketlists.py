@@ -1,12 +1,11 @@
 from flask import g, jsonify, request
-from flask_httpauth import HTTPBasicAuth, HTTPTokenAuth
-from flask_restful import Resource, marshal
-from flask_restful import reqparse
+from flask_httpauth import HTTPTokenAuth
+from flask_restful import marshal, reqparse, Resource
 
 from app import db
 from models import BucketList
 from serializers import bucketlists_serializer
-from utils import current_user_bucketlist, token_auth
+from utils import current_user_bucketlist
 
 auth = HTTPTokenAuth(scheme='Token')
 
@@ -25,16 +24,18 @@ class AllBucketlists(Resource):
         args = parser.parse_args()
         name = args["name"]
         description = args["description"]
-
+        # set parsed items to an object of model class
         b_list = BucketList(name=name, description=description, created_by=g.user.id)
 
         if not name:
-            message = {'message': 'Please provide a name for the bucketlist'}
-            return message, 400
+            response = jsonify({'message': 'Please provide a name for the bucketlist'})
+            response.status_code = 400
+            return response
         try:
             BucketList.query.filter_by(name=name).one()
-            message = {'message': 'That name is already taken, try again'}
-            return message, 400
+            response = jsonify({'message': 'That name is already taken, try again'})
+            response.status_code = 400
+            return response
 
         except:
             try:
@@ -43,12 +44,13 @@ class AllBucketlists(Resource):
                 message = {'message': 'Bucket List updated Successfully'}
                 response = marshal(b_list, bucketlists_serializer)
                 response.update(message)
-                return response, 201
+                response.status_code = 201
+                return response
 
-            except Exception as e:
+            except Exception:
                 response = jsonify({'message': 'There was an error saving the bucketlist'})
                 response.status_code = 400
-                return e
+                return response
 
     def get(self):
         """ Method that gets all bucketlists """
@@ -60,13 +62,14 @@ class AllBucketlists(Resource):
         if q:
             b_lists = BucketList.query.filter(BucketList.name.contains(q)).filter_by(
             created_by=g.user.id).paginate(page, limit, False)
-            if len(b_lists) < 0:
-                message = {'message':'No bucketlists with that query...'}
-                return message, 404
+            if len(b_lists) <= 0:
+                response = jsonify({'message': 'No bucketlists with that query...'})
+                response.status_code = 404
+                return response
         else:
             # query a paginate object
             b_lists = BucketList.query.filter_by(created_by=g.user.id).paginate(
-            page,limit, False)
+            page, limit, False)
 
             all_pages = b_lists.pages # get total page count
             next_pg = b_lists.has_next # check for next page
@@ -92,12 +95,13 @@ class AllBucketlists(Resource):
                     'total pages': all_pages,
                     'next page': next_page,
                     'previous page': previous_page }
-            # if bucketlists are note None, return data as output
+            # if bucketlists are not None, return data as output
             if b_lists:
                 return data
             else:
-                message = {'message': 'There are no bucketlists available'}
-                return message, 404
+                response = jsonify({'message': 'There are no bucketlists available'})
+                response.status_code = 404
+                return response
 
 
 class BucketlistApi(Resource):
@@ -111,13 +115,15 @@ class BucketlistApi(Resource):
         """
         Method that gets a single bucketlist
         """
+        # gets all bucketlists belonging to the user
         bucketlist = BucketList.query.filter_by(id=id).first()
         if bucketlist:
             response = marshal(bucketlist, bucketlists_serializer)
             return response
         else:
-            response = {'message': 'the bucketlist does not exist'}
-            return response, 404
+            response = jsonify({'message': 'the bucketlist does not exist'})
+            response.status_code = 404
+            return response
 
     @current_user_bucketlist
     def put(self, id):
@@ -125,7 +131,7 @@ class BucketlistApi(Resource):
         Method that edits an existing bucketlist
         """
         bucketlist = BucketList.query.get(id)
-
+        # if the bucketlist exists get new changes
         if bucketlist:
             parser = reqparse.RequestParser()
             parser.add_argument('name', type=str, help='A name is required')
@@ -134,34 +140,41 @@ class BucketlistApi(Resource):
 
             name = args["name"]
             description = args["description"]
-
+            # update changes and commit to db
             item_info = BucketList.query.filter_by(id=id).update(
                 {'name': name, 'description': description})
 
             try:
                 db.session.commit()
-                message = {'message': 'Bucket List has been updated!'}
-                return message, 201
+                response = jsonify({'message': 'Bucket List has been updated!'})
+                response.status_code = 201
+                return response
 
-            except Exception as e:
-                message = {'message': 'There was an error updating the bucketlist'}
-                return e
+            except Exception:
+                response = jsonify({'message': 'There was an error updating the bucketlist'})
+                response.status_code = 500
+                return response
         else:
-            message = {'message': 'The bucketlist does not exist'}
-            return message, 404
+            response = jsonify({'message': 'The bucketlist does not exist'})
+            response.status_code = 404
+            return response
 
     @current_user_bucketlist
     def delete(self, id):
         """
         Method that deletes an existing bucketlist
         """
+        # query whether the bucketlist exists
         bucketlist = BucketList.query.get(id)
 
+        # if it exists delete and commit changes to db
         if bucketlist:
             BucketList.query.filter_by(id=id).delete()
             db.session.commit()
-            message = {'message': 'The bucketlist has been successfully deleted'}
-            return message, 200
-        else:
-            message = {'message': 'The buckelist does not exist'}
-            return message, 400
+            response = jsonify({'message': 'The bucketlist has been successfully deleted'})
+            response.status_code = 200
+            return response
+        else: # else return a 404 response
+            response = jsonify({'message': 'The buckelist does not exist'})
+            response.status_code = 404
+            return response
