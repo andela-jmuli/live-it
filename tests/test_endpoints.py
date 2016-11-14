@@ -13,12 +13,13 @@ class TestEndPoints(SuperTestCase):
 
         Methods: GET, PUT, POST, DELETE
       """
-
+    #   data=json.dumps(bucketlist_new),
+    #                                     headers=self.auth_head
     def test_creation_of_a_bucketlist(self):
         """ Test for creation of a bucketlist """
         self.buck = {"name": "tomorrowland", "description": "dance time"}
         response = self.client.get(
-            "/api/v1/bucketlists/", headers=self.make_token(),
+            "/api/v1/bucketlists/", data=self.buck, headers=self.make_token(),
             content_type='application/json')
         self.assertEqual(response.status_code, 200)
 
@@ -45,7 +46,7 @@ class TestEndPoints(SuperTestCase):
 
         # msg = json.loads(response.data).decode()
         msg = response.json
-        self.assertEqual(str(msg), 'The bucketlist does not exist')
+        self.assertEqual(str(msg['message']), 'The buckelist does not exist')
         self.assertEqual(response.status_code, 404)
 
     def test_get_bucketlists(self):
@@ -83,15 +84,6 @@ class TestEndPoints(SuperTestCase):
         response = self.app.put(
             "/api/v1/bucketlists/1/items/1", headers=self.make_token())
         self.assertEqual(response.status_code, 200)
-
-    def test_editing_a_none_existing_item(self):
-        """ Test for editing an item """
-        self.item = {"name": "learn the guitar",
-                     "description": "take guitar classes"}
-        response = self.app.put("/api/v1/bucketlists/100/items/650",
-                                headers=self.make_token(),
-                                content_type='application/json')
-        self.assertEqual(response.status_code, 404)
 
     def test_deletion_of_an_item(self):
         """ Test for deletion of an item  """

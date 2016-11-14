@@ -42,7 +42,8 @@ class SuperTestCase(TestCase):
         response = self.app.post("api/v1/auth/login", data=self.user_data)
         output = json.loads(response.data)
         token = output.get("token").encode("ascii")
-        return {'token':token}
+        self.authorization = {'Authorization': 'Token %s' % token}
+        return self.authorization
 
     def tearDown(self):
         db.session.remove()
