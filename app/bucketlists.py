@@ -1,10 +1,10 @@
 from flask import g, jsonify, request
 from flask_httpauth import HTTPTokenAuth
 from flask_jwt import jwt_required
-from flask_restful import marshal, reqparse, Resource
+from flask_restful import marshal, reqparse, Resource, abort
 
 from app import db
-from models import BucketList
+from models import BucketList, BucketListItem
 from serializers import bucketlists_serializer
 from utils import multiauth
 
@@ -14,7 +14,7 @@ class AllBucketlists(Resource):
         methods: GET, POST
         url: api/v1/bucketlists/
      """
-    
+
     @multiauth.login_required
     def post(self):
         """ Method to create new bucketlists """
@@ -22,15 +22,16 @@ class AllBucketlists(Resource):
         parser.add_argument('name', type=str, help='A name is required')
         parser.add_argument('description', type=str, default='')
         args = parser.parse_args()
-        name = args["name"]
+        name = args.get("name")
         description = args["description"]
         # set parsed items to an object of model class
         b_list = BucketList(name=name, description=description, created_by=g.user.id)
 
         if not name:
-            response = jsonify({'message': 'Please provide a name for the bucketlist'})
-            response.status_code = 400
-            return response
+            # response = jsonify({'message': 'Please provide a name for the bucketlist'})
+            # response.status_code = 400
+            # return response
+            abort(400, message='Please provide a name for the bucketlist')
         try:
             BucketList.query.filter_by(name=name).one()
             response = jsonify({'message': 'That name is already taken, try again'})
@@ -120,8 +121,11 @@ class BucketlistApi(Resource):
         # gets all bucketlists belonging to the user
         bucketlist = BucketList.query.filter_by(id=id).first()
         if bucketlist:
-            response = marshal(bucketlist, bucketlists_serializer)
-            return response
+            if bucketlist.created_by == g.user.id:
+                response = marshal(bucketlist, bucketlists_serializer)
+                return response
+            else:
+                abort(401, message='You are not authorized to view this')
         else:
             response = jsonify({'message': 'the bucketlist does not exist'})
             response.status_code = 404
@@ -135,31 +139,32 @@ class BucketlistApi(Resource):
         bucketlist = BucketList.query.get(id)
         # if the bucketlist exists get new changes
         if bucketlist:
-            parser = reqparse.RequestParser()
-            parser.add_argument('name', type=str, help='A name is required')
-            parser.add_argument('description', type=str, default='')
-            args = parser.parse_args()
+            if bucketlist.created_by == g.user.id:
+                parser = reqparse.RequestParser()
+                parser.add_argument('name', type=str, help='A name is required')
+                parser.add_argument('description', type=str, default='')
+                args = parser.parse_args()
 
-            name = args["name"]
-            description = args["description"]
-            # update changes and commit to db
-            item_info = BucketList.query.filter_by(id=id).update(
-                {'name': name, 'description': description})
+                name = args["name"]
+                description = args["description"]
+                # update changes and commit to db
+                item_info = BucketList.query.filter_by(id=id).update(
+                    {'name': name, 'description': description})
 
-            try:
-                db.session.commit()
-                response = jsonify({'message': 'Bucket List has been updated!'})
-                response.status_code = 201
-                return response
+                try:
+                    db.session.commit()
+                    response = jsonify({'message': 'Bucket List has been updated!'})
+                    response.status_code = 201
+                    return response
 
-            except Exception:
-                response = jsonify({'message': 'There was an error updating the bucketlist'})
-                response.status_code = 500
-                return response
+                except Exception:
+                    response = jsonify({'message': 'There was an error updating the bucketlist'})
+                    response.status_code = 500
+                    return response
+            else:
+                abort(401, message='You are not authorized to edit this')
         else:
-            response = jsonify({'message': 'The bucketlist does not exist'})
-            response.status_code = 404
-            return response
+            abort(404, message='The bucketlist does not exist')
 
     @multiauth.login_required
     def delete(self, id):
@@ -171,12 +176,15 @@ class BucketlistApi(Resource):
 
         # if it exists delete and commit changes to db
         if bucketlist:
-            BucketList.query.filter_by(id=id).delete()
-            db.session.commit()
-            response = jsonify({'message': 'The bucketlist has been successfully deleted'})
-            response.status_code = 200
-            return response
+            if bucketlist.created_by == g.user.id: # if bucketlist belongs to logged in user
+                BucketList.query.filter_by(id=id).delete()
+                # also delete all bucketlist items in the bucketlist
+                BucketListItem.query.filter_by(bucketlist_id=id).delete()
+                db.session.commit()
+                response = jsonify({'message': 'The bucketlist and its items have been successfully deleted'})
+                response.status_code = 200
+                return response
+            else:
+                abort(401, message='You are not authorized to delete this')
         else: # else return a 404 response
-            response = jsonify({'message': 'The buckelist does not exist'})
-            response.status_code = 404
-            return response
+            abort(404, message='The bucketlist does not exist')

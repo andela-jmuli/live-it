@@ -72,49 +72,59 @@ class BucketlistItem(Resource):
         bucketlist = BucketList.query.get(id)
         item = BucketListItem.query.filter_by(id=item_id).one()
 
-        if bucketlist and item:
-            parser = reqparse.RequestParser()
-            parser.add_argument('name', type=str, help='A name is required')
-            parser.add_argument('description', type=str, default='')
-            args = parser.parse_args()
+        if item.created_by == g.user.id:
+            if bucketlist and item:
+                parser = reqparse.RequestParser()
+                parser.add_argument('name', type=str, help='A name is required')
+                parser.add_argument('description', type=str, default='')
+                args = parser.parse_args()
 
-            name = args["name"]
-            description = args["description"]
+                name = args["name"]
+                description = args["description"]
 
-            item_info = BucketListItem.query.filter_by(id=item_id).update(
-                {'name': name, 'description': description})
+                item_info = BucketListItem.query.filter_by(id=item_id).update(
+                    {'name': name, 'description': description})
 
-            try:
-                db.session.commit()
-                response = jsonify({'message': 'Bucket List item updated'})
-                response.status_code = 200
-                return response
+                try:
+                    db.session.commit()
+                    response = jsonify({'message': 'Bucket List item updated'})
+                    response.status_code = 200
+                    return response
 
-            except Exception:
+                except Exception:
+                    response = jsonify(
+                        {'message': 'There was an error updating the item'})
+                    response.status_code = 500
+                    return response
+            else:
                 response = jsonify(
-                    {'message': 'There was an error updating the item'})
-                response.status_code = 500
+                    {'message': 'The bucketlist or item does not exist'})
+                response.status_code = 404
                 return response
         else:
-            response = jsonify(
-                {'message': 'The bucketlist or item does not exist'})
-            response.status_code = 404
+            response = jsonify({'message': 'You are not authorized to edit this'})
+            response.status_code = 401
             return response
 
     @multiauth.login_required
     def get(self, id, item_id):
         bucketlist = BucketList.query.filter_by(id=id).first()
         item = BucketListItem.query.filter_by(id=item_id).first()
-        if bucketlist:
-            if item:
-                return marshal(item, items_serializer)
+        if item.created_by == g.user.id:
+            if bucketlist:
+                if item:
+                    return marshal(item, items_serializer)
+                else:
+                    response = jsonify({'message': 'the item does not exist'})
+                    response.status_code = 404
+                    return response
             else:
-                response = jsonify({'message': 'the item does not exist'})
+                response = jsonify({'message': 'the bucketlist does not exist'})
                 response.status_code = 404
                 return response
         else:
-            response = jsonify({'message': 'the bucketlist does not exist'})
-            response.status_code = 404
+            response = jsonify({'message': 'You are not authorized to view this'})
+            response.status_code = 401
             return response
 
     @multiauth.login_required
@@ -122,12 +132,17 @@ class BucketlistItem(Resource):
         item = BucketListItem.query.get(item_id)
 
         if item:
-            BucketListItem.query.filter_by(id=item_id).delete()
-            db.session.commit()
-            response = jsonify(
-                {'message': 'The item has been successfully deleted'})
-            response.status_code = 200
-            return response
+            if item.created_by == g.user.id:
+                BucketListItem.query.filter_by(id=item_id).delete()
+                db.session.commit()
+                response = jsonify(
+                    {'message': 'The item has been successfully deleted'})
+                response.status_code = 200
+                return response
+            else:
+                response = jsonify({'message': 'You are not authorized to delete this'})
+                response.status_code = 401
+                return response
         else:
             response = jsonify({'message': 'The item does not exist'})
             response.status_code = 404
