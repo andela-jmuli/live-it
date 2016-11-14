@@ -25,15 +25,18 @@ class AllBucketlists(Resource):
         name = args["name"]
         description = args["description"]
         # set parsed items to an object of model class
-        b_list = BucketList(name=name, description=description, created_by=g.user.id)
+        b_list = BucketList(
+            name=name, description=description, created_by=g.user.id)
 
         if not name:
-            response = jsonify({'message': 'Please provide a name for the bucketlist'})
+            response = jsonify(
+                {'message': 'Please provide a name for the bucketlist'})
             response.status_code = 400
             return response
         try:
             BucketList.query.filter_by(name=name).one()
-            response = jsonify({'message': 'That name is already taken, try again'})
+            response = jsonify(
+                {'message': 'That name is already taken, try again'})
             response.status_code = 400
             return response
 
@@ -48,44 +51,48 @@ class AllBucketlists(Resource):
                 return response
 
             except Exception:
-                response = jsonify({'message': 'There was an error saving the bucketlist'})
+                response = jsonify(
+                    {'message': 'There was an error saving the bucketlist'})
                 response.status_code = 400
                 return response
 
     def get(self):
         """ Method that gets all bucketlists """
         args = request.args.to_dict()
-        page = int(args.get('page', 1)) # query start as an integer
-        limit = int(args.get('limit', 20)) # 100 items == 20 per page for 5 pages
+        page = int(args.get('page', 1))  # query start as an integer
+        # 100 items == 20 per page for 5 pages
+        limit = int(args.get('limit', 20))
         q = args.get('q')
 
         if q:
             b_lists = BucketList.query.filter(BucketList.name.contains(q)).filter_by(
-            created_by=g.user.id).paginate(page, limit, False)
+                created_by=g.user.id).paginate(page, limit, False)
             if len(b_lists) <= 0:
-                response = jsonify({'message': 'No bucketlists with that query...'})
+                response = jsonify(
+                    {'message': 'No bucketlists with that query...'})
                 response.status_code = 404
                 return response
         else:
             # query a paginate object
             b_lists = BucketList.query.filter_by(created_by=g.user.id).paginate(
-            page, limit, False)
+                page, limit, False)
 
-            all_pages = b_lists.pages # get total page count
-            next_pg = b_lists.has_next # check for next page
-            previous_pg = b_lists.has_prev # check for previous page
+            all_pages = b_lists.pages  # get total page count
+            next_pg = b_lists.has_next  # check for next page
+            previous_pg = b_lists.has_prev  # check for previous page
 
-            # if the query allows a max over the limit, generate a url for the next page
+            # if the query allows a max over the limit, generate a url for the
+            # next page
             if next_pg:
                 next_page = str(request.url_root) + 'api/v1/bucketlists?' + \
-                'limit=' + str(limit) + '&page=' + str(page + 1)
+                    'limit=' + str(limit) + '&page=' + str(page + 1)
             else:
                 next_page = 'None'
 
             # set a url for the previous page
             if previous_pg:
                 previous_page = str(request.url_root) + 'api/v1/bucketlists?' + \
-                'limit=' + str(limit) + '&page=' + str(page - 1)
+                    'limit=' + str(limit) + '&page=' + str(page - 1)
             else:
                 previous_page = 'None'
 
@@ -94,12 +101,13 @@ class AllBucketlists(Resource):
             data = {'bucketlists': marshal(b_lists, bucketlists_serializer),
                     'total pages': all_pages,
                     'next page': next_page,
-                    'previous page': previous_page }
+                    'previous page': previous_page}
             # if bucketlists are not None, return data as output
             if b_lists:
                 return data
             else:
-                response = jsonify({'message': 'There are no bucketlists available'})
+                response = jsonify(
+                    {'message': 'There are no bucketlists available'})
                 response.status_code = 404
                 return response
 
@@ -146,12 +154,14 @@ class BucketlistApi(Resource):
 
             try:
                 db.session.commit()
-                response = jsonify({'message': 'Bucket List has been updated!'})
+                response = jsonify(
+                    {'message': 'Bucket List has been updated!'})
                 response.status_code = 201
                 return response
 
             except Exception:
-                response = jsonify({'message': 'There was an error updating the bucketlist'})
+                response = jsonify(
+                    {'message': 'There was an error updating the bucketlist'})
                 response.status_code = 500
                 return response
         else:
@@ -171,10 +181,11 @@ class BucketlistApi(Resource):
         if bucketlist:
             BucketList.query.filter_by(id=id).delete()
             db.session.commit()
-            response = jsonify({'message': 'The bucketlist has been successfully deleted'})
+            response = jsonify(
+                {'message': 'The bucketlist has been successfully deleted'})
             response.status_code = 200
             return response
-        else: # else return a 404 response
+        else:  # else return a 404 response
             response = jsonify({'message': 'The buckelist does not exist'})
             response.status_code = 404
             return response

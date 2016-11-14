@@ -3,7 +3,8 @@ from . import app
 from app import db
 from config.config import config_settings
 from flask_sqlalchemy import SQLAlchemy
-from itsdangerous import (TimedJSONWebSignatureSerializer as Serializer, BadSignature, SignatureExpired)
+from itsdangerous import (TimedJSONWebSignatureSerializer as
+                          Serializer, BadSignature, SignatureExpired)
 from werkzeug.security import generate_password_hash, check_password_hash
 
 

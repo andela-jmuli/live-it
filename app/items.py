@@ -3,15 +3,17 @@ from flask_restful import Resource, marshal
 from flask_restful import reqparse
 
 from app import db
-from models import BucketList,BucketListItem
+from models import BucketList, BucketListItem
 from serializers import items_serializer
 from utils import current_user_blist_items
+
 
 class BucketlistItem(Resource):
     """ Defines endpoints for bucketlist items manipulation
         methods: GET, POST, PUT, DELETE
         url: /api/v1/bucketlists/<bucketlist_id>/items/
      """
+
     def post(self, id):
         """
         request that handles bucketlist item creation
@@ -26,16 +28,20 @@ class BucketlistItem(Resource):
             name = args["name"]
             description = args["description"]
 
-            item = BucketListItem(name=name, description=description, bucketlist_id=id, created_by=g.user.id)
+            item = BucketListItem(
+                name=name, description=description,
+                bucketlist_id=id, created_by=g.user.id)
 
             if not name:
-                response = jsonify({'message': 'Please provide a name for the bucketlist'})
+                response = jsonify(
+                    {'message': 'Please provide a name for the bucketlist'})
                 response.status_code = 400
                 return response
 
             try:
                 BucketListItem.query.filter_by(name=name).one()
-                response = jsonify({'message': 'That name is already taken, try again'})
+                response = jsonify(
+                    {'message': 'That name is already taken, try again'})
                 response.status_code = 400
                 return response
 
@@ -43,17 +49,21 @@ class BucketlistItem(Resource):
                 try:
                     db.session.add(item)
                     db.session.commit()
-                    message = {'message': 'Bucket List item added Successfully!'}
+                    message = {
+                        'message': 'Bucket List item added Successfully!'}
                     response = marshal(item, items_serializer)
                     response.update(message)
                     return response, 201
 
-                except Exception as e:
-                    response = jsonify({'message': 'There was an error saving the item'})
+                except:
+                    response = jsonify(
+                        {'message': 'There was an error saving the item'})
                     response.status_code = 400
                     return response
         else:
-            response = jsonify({'message': 'A bucketlist with the ID provided does not exist!'})
+            response = jsonify(
+                {'message': 'A bucketlist with the ID \
+                 provided does not exist!'})
             response.status_code = 404
             return response
 
@@ -81,11 +91,13 @@ class BucketlistItem(Resource):
                 return response
 
             except Exception:
-                response = jsonify({'message': 'There was an error updating the item'})
+                response = jsonify(
+                    {'message': 'There was an error updating the item'})
                 response.status_code = 500
                 return response
         else:
-            response = jsonify({'message': 'The bucketlist or item does not exist'})
+            response = jsonify(
+                {'message': 'The bucketlist or item does not exist'})
             response.status_code = 404
             return response
 
@@ -112,7 +124,8 @@ class BucketlistItem(Resource):
         if item:
             BucketListItem.query.filter_by(id=item_id).delete()
             db.session.commit()
-            response = jsonify({'message': 'The item has been successfully deleted'})
+            response = jsonify(
+                {'message': 'The item has been successfully deleted'})
             response.status_code = 200
             return response
         else:
