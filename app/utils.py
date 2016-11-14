@@ -1,93 +1,55 @@
 from functools import wraps
-from flask import g, jsonify, request
-from flask_httpauth import HTTPBasicAuth, HTTPTokenAuth
+from flask import g, jsonify, request, make_response
+from flask_httpauth import HTTPBasicAuth, HTTPTokenAuth, MultiAuth
 from flask_restful import Resource
 from itsdangerous import (
     TimedJSONWebSignatureSerializer as Serializer, BadSignature, SignatureExpired)
+from werkzeug.security import generate_password_hash, check_password_hash
 
 from app import app
 from config.config import config_settings
-from models import User, BucketList, BucketListItem
+from models import User, BucketList, BucketListItem, s
 
-auth = HTTPBasicAuth(scheme='Token')
-token_auth = HTTPTokenAuth(scheme='Token')
+basic_auth = HTTPBasicAuth()
+token_auth = HTTPTokenAuth('Token')
+multiauth = MultiAuth(basic_auth, token_auth)
 
-
-@auth.verify_password
-def authenticate_token(token):
-    user = User.verify_token(token)
-    if user:
-        g.user = user
-        return user
+@basic_auth.verify_password
+def verify_password(username, password):
+    user_det = User.query.filter_by(username=username).first()
+    if user_det and check_password_hash(user_det.password, password):
+        return True
     return False
 
+@token_auth.verify_token
+def verify_token(token):
+    try:
+        data = s.loads(token)
+    except SignatureExpired:
+        return 'Expired!'
+    except BadSignature:
+        return 'Bad signature'
+    user = User.query.get(data['id'])
+    if user:
+        g.user = user
+        return True
+    return False
 
-@auth.error_handler
+@app.errorhandler(403)
 def unauthorized(message=None):
     return make_response(jsonify(
         {'Error': 'Invalid token given, '
          'Login again to gain access'}), 403)
 
+@app.errorhandler(404)
+def unauthorized(message=None):
+     return make_response(jsonify(
+         {'Error': 'Data not found'}))
 
-def current_user_bucketlist(function):
-    ''' This method check's whether a user is authorized
-        to access and manipulate a bucketlist
-    '''
-
-    def auth_wrapper(*args, **kwargs):
-        g.bucketlist = BucketList.query.filter_by(id=kwargs["id"]).first()
-        try:
-            if g.bucketlist.created_by == g.user.id:
-                return function(*args, **kwargs)
-
-            return 'You are not authorized', 401
-        except:
-            return 'The bucketlist does not exist', 404
-    return auth_wrapper
-
-
-def current_user_blist_items(fuction):
-    ''' This method checks whether a user is authorized
-        to access and manipulate a bucketlist item
-    '''
-
-    def auth_wrapper(*args, **kwargs):
-        g.bucketlist_item = BucketListItem.query.filter_by(
-            id=kwargs["id"]).first()
-        try:
-            if g.bucketlist_item.created_by == g.user.id:
-                return fuction(*args, **kwargs)
-            response = jsonify({'message': 'You are not authorized'})
-            response.status_code = 401
-            return response
-        except:
-            response = jsonify(
-                {'message': 'The item requested does not exist'})
-            response.status_code = 404
-            return response
-    return auth_wrapper
-
-
-@app.before_request
-def before_request():
-    """
-    This method validates a user's token and creates a global user
-    object to be accessed by methods and requests
-    The method runs before all requests, exceptional requests
-    are 'home', 'register' and 'login'
-    """
-    if request.endpoint not in ['home', 'register', 'login']:
-        token = request.headers.get('token')
-        if token is not None:
-            user = authenticate_token(token)
-            if user:
-                g.user = user
-            else:
-                message = {'message': 'The token entered is invalid!'}
-                return message, 400
-        else:
-            message = {'message': 'Please provide a token'}
-            return message, 401
+@app.errorhandler(400)
+def unauthorized(message=None):
+     return make_response(jsonify(
+         {'Error': 'Bad request'}))
 
 
 class Home(Resource):
@@ -100,6 +62,5 @@ class Home(Resource):
 
     def get(self):
         response = jsonify(
-            {"message": "Welcome to live-it! To get started, \
-             register a new user or login"})
+            {"message": "Welcome to live-it! To get started, register a new user or login"})
         return response

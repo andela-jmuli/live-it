@@ -5,7 +5,7 @@ from flask_restful import reqparse
 from app import db
 from models import BucketList, BucketListItem
 from serializers import items_serializer
-from utils import current_user_blist_items
+from utils import multiauth
 
 
 class BucketlistItem(Resource):
@@ -13,7 +13,7 @@ class BucketlistItem(Resource):
         methods: GET, POST, PUT, DELETE
         url: /api/v1/bucketlists/<bucketlist_id>/items/
      """
-
+    @multiauth.login_required
     def post(self, id):
         """
         request that handles bucketlist item creation
@@ -67,7 +67,7 @@ class BucketlistItem(Resource):
             response.status_code = 404
             return response
 
-    @current_user_blist_items
+    @multiauth.login_required
     def put(self, id, item_id):
         bucketlist = BucketList.query.get(id)
         item = BucketListItem.query.filter_by(id=item_id).one()
@@ -101,7 +101,7 @@ class BucketlistItem(Resource):
             response.status_code = 404
             return response
 
-    @current_user_blist_items
+    @multiauth.login_required
     def get(self, id, item_id):
         bucketlist = BucketList.query.filter_by(id=id).first()
         item = BucketListItem.query.filter_by(id=item_id).first()
@@ -117,7 +117,7 @@ class BucketlistItem(Resource):
             response.status_code = 404
             return response
 
-    @current_user_blist_items
+    @multiauth.login_required
     def delete(self, id, item_id):
         item = BucketListItem.query.get(item_id)
 

@@ -7,6 +7,7 @@ from itsdangerous import (TimedJSONWebSignatureSerializer as
                           Serializer, BadSignature, SignatureExpired)
 from werkzeug.security import generate_password_hash, check_password_hash
 
+s = Serializer(config_settings['SECRET_KEY'], expires_in=10000)
 
 class User(db.Model):
     """ User Model """
@@ -22,21 +23,7 @@ class User(db.Model):
         return check_password_hash(self.password_hash, password)
 
     def generate_auth_token(self, expires_in=10000):
-        s = Serializer(config_settings['SECRET_KEY'], expires_in=expires_in)
         return s.dumps({'id': self.id}).decode('utf-8')
-
-    @staticmethod
-    def verify_token(token):
-        s = Serializer(config_settings['SECRET_KEY'])
-        try:
-            data = s.loads(token)
-        except SignatureExpired:
-            return 'Expired!'
-        except BadSignature:
-            return None
-
-        user = User.query.get(data['id'])
-        return user
 
 
 class BucketList(db.Model):
