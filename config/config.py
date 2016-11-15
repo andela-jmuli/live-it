@@ -7,7 +7,10 @@ class Config():
     " default settings "
     DEBUG = True
     TESTING = True
-    SQLALCHEMY_DATABASE_URI = "sqlite:///" + os.path.join(basedir, "bucketlist.db")
+    SQLALCHEMY_DATABASE_URI = "sqlite:///" + \
+        os.path.join(basedir, "bucketlist.db")
+    ERROR_404_HELP = False
+
 
 
 class TestingConfig(object):
@@ -15,7 +18,8 @@ class TestingConfig(object):
     DEBUG = True
     PRESERVE_CONTEXT_ON_EXCEPTION = False
     TESTING = True
-    SQLALCHEMY_DATABASE_URI = "sqlite:///" + os.path.join(basedir, "test_bucketlist.db")
+    SQLALCHEMY_DATABASE_URI = "sqlite:///" + \
+        os.path.join(basedir, "test_bucketlist.db")
     SQLALCHEMY_TRACK_MODIFICATIONS = True
 
 
@@ -23,7 +27,8 @@ class DevelopmentConfig(object):
     " development configuration "
     DEBUG = True
     TESTING = True
-    SQLALCHEMY_DATABASE_URI = "sqlite:///" + os.path.join(basedir, "bucketlist.db")
+    SQLALCHEMY_DATABASE_URI = "sqlite:///" + \
+        os.path.join(basedir, "bucketlist.db")
     SQLALCHEMY_TRACK_MODIFICATIONS = True
 
 config_settings = {

@@ -3,7 +3,7 @@ omit=
     */python?.?/*
     *site-packages/*
     *tests/*
-    *app/__init__.py*
-    *tests/__init__.py*
+    *manage.py*
+
 [html]
 directory = coverage_html

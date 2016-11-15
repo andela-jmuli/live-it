@@ -6,6 +6,8 @@ install:
   - pip install -r requirements.txt
   - pip install coveralls
   - pip install coverage
+branches:
+  - users-v0.1 
 env:
   - DB=sqlite
 # command to run tests
