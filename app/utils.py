@@ -44,13 +44,15 @@ def unauthorized(message=None):
 @app.errorhandler(404)
 def unauthorized(message=None):
      return make_response(jsonify(
-         {'Error': 'Data not found'}))
+         {'Error': 'Data not found'}), 404)
 
 @app.errorhandler(400)
 def unauthorized(message=None):
      return make_response(jsonify(
-         {'Error': 'Bad request'}))
-
+         {'Error': 'Bad request'}), 400)
+def search_bucketlists(q):
+    bucketlists = BucketList.query.filter(BucketList.name.contains(q)).all()
+    return bucketlists
 
 class Home(Resource):
     """

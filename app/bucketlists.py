@@ -6,7 +6,7 @@ from flask_restful import marshal, reqparse, Resource, abort
 from app import db
 from models import BucketList, BucketListItem
 from serializers import bucketlists_serializer
-from utils import multiauth
+from utils import multiauth, search_bucketlists
 
 
 class AllBucketlists(Resource):
@@ -63,12 +63,13 @@ class AllBucketlists(Resource):
         q = args.get('q')
 
         if q:
-            b_lists = BucketList.query.filter(BucketList.name.contains(q)).filter_by(
-            created_by=g.user.id).paginate(page, limit, False)
-            if len(b_lists) <= 0:
-                response = jsonify({'message': 'No bucketlists with that query...'})
-                response.status_code = 404
+            bucketlists = search_bucketlists(q)
+            if not bucketlists:
+                abort(404, message='No data found matching the query')
+            else:
+                response = marshal(bucketlists, bucketlists_serializer)
                 return response
+
         else:
             # query a paginate object
             b_lists = BucketList.query.filter_by(created_by=g.user.id).paginate(
@@ -119,6 +120,8 @@ class BucketlistApi(Resource):
         Method that gets a single bucketlist
         """
         # gets all bucketlists belonging to the user
+        # id = request.args['id']
+
         bucketlist = BucketList.query.filter_by(id=id).first()
         if bucketlist:
             if bucketlist.created_by == g.user.id:
@@ -147,6 +150,8 @@ class BucketlistApi(Resource):
 
                 name = args["name"]
                 description = args["description"]
+                if not name or description:
+                    abort(400, message='Please correct the field errors')
                 # update changes and commit to db
                 item_info = BucketList.query.filter_by(id=id).update(
                     {'name': name, 'description': description})

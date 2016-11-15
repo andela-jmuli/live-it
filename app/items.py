@@ -1,6 +1,6 @@
 from flask import g, jsonify
 from flask_restful import Resource, marshal
-from flask_restful import reqparse
+from flask_restful import abort, reqparse
 
 from app import db
 from models import BucketList, BucketListItem
@@ -110,21 +110,26 @@ class BucketlistItem(Resource):
     def get(self, id, item_id):
         bucketlist = BucketList.query.filter_by(id=id).first()
         item = BucketListItem.query.filter_by(id=item_id).first()
-        if item.created_by == g.user.id:
-            if bucketlist:
-                if item:
-                    return marshal(item, items_serializer)
+        if item:
+            if item.created_by == g.user.id:
+                if bucketlist:
+                    if item:
+                        return marshal(item, items_serializer)
+                    else:
+                        response = jsonify({'message': 'the item does not exist'})
+                        response.status_code = 404
+                        return response
                 else:
-                    response = jsonify({'message': 'the item does not exist'})
+                    response = jsonify({'message': 'the bucketlist does not exist'})
                     response.status_code = 404
                     return response
             else:
-                response = jsonify({'message': 'the bucketlist does not exist'})
-                response.status_code = 404
+                response = jsonify({'message': 'You are not authorized to view this'})
+                response.status_code = 401
                 return response
         else:
-            response = jsonify({'message': 'You are not authorized to view this'})
-            response.status_code = 401
+            response = jsonify({'message': 'The item does not exist'})
+            response.status_code = 404
             return response
 
     @multiauth.login_required
@@ -140,7 +145,7 @@ class BucketlistItem(Resource):
                 response.status_code = 200
                 return response
             else:
-                response = jsonify({'message': 'You are not authorized to delete this'})
+                response = jsonify({'message': 'You are not authorized to del this'})
                 response.status_code = 401
                 return response
         else:
