@@ -13,8 +13,14 @@ class TestEndPoints(SuperTestCase):
 
         Methods: GET, PUT, POST, DELETE
       """
-    #   data=json.dumps(bucketlist_new),
-    #                                     headers=self.auth_head
+
+    def test_invalid_url_on_creation_of_a_bucketlist(self):
+        self.buck = {"name": "tomorrowland", "description": "dance time"}
+        response = self.client.post(
+            "/api/v1/bucketlists//", data=self.buck, headers=self.make_token(),
+            content_type='application/json')
+        self.assertEqual(response.status_code, 404)
+
     def test_creation_of_a_bucketlist(self):
         """ Test for creation of a bucketlist """
         self.buck = {"name": "tomorrowland", "description": "dance time"}
@@ -44,7 +50,6 @@ class TestEndPoints(SuperTestCase):
             "/api/v1/bucketlists/1200", headers=self.make_token(),
             content_type='application/json')
 
-        # msg = json.loads(response.data).decode()
         msg = response.json
         self.assertEqual(response.status_code, 404)
 
@@ -75,6 +80,13 @@ class TestEndPoints(SuperTestCase):
                                 headers=self.make_token())
         self.assertEqual(response.status_code, 404)
 
+    def test_input_on_get_bucketlists_request(self):
+        response = self.app.get("/api/v1/bucketlists?limit=abc",
+                                headers=self.make_token())
+        msg = str(response.json['message'])
+        self.assertEqual(msg, ' provide an integer')
+        self.assertEqual(response.status_code, 400)
+
     def test_item_creation(self):
         """ Test for response on new item creation """
         item_data = {"name": "invite guyz",
@@ -83,6 +95,26 @@ class TestEndPoints(SuperTestCase):
             "/api/v1/bucketlists/2/items/", data=item_data,
             headers=self.make_token())
         self.assertEqual(response.status_code, 201)
+
+    def test_item_creation_with_invalid_url(self):
+        item_data = {"name": "invite guyz",
+                     "description": "call up the hommies"}
+        response = self.app.post(
+            "/api/v1/bucketlists/2/items/1", data=item_data,
+            headers=self.make_token())
+        msg = str(response.json['message'])
+        self.assertEqual(msg, 'Method not allowed(POST)')
+        self.assertEqual(response.status_code, 400)
+
+    def test_item_creation_with_invalid_credentials(self):
+        item_data = {"namee": "invite guyz",
+                     "description": "call up the hommies"}
+        response = self.app.post(
+            "/api/v1/bucketlists/2/items/", data=item_data,
+            headers=self.make_token())
+        msg = str(response.json['message'])
+        self.assertEqual(msg, 'Please provide a name for the item')
+        self.assertEqual(response.status_code, 400)
 
     def test_editing_an_item(self):
         """ Test for editing an item """
