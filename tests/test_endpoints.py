@@ -280,7 +280,6 @@ class TestEndPoints(SuperTestCase):
         self.assertEqual(response.status_code, 401)
 
     def test_requesting_a_none_existent_item(self):
-
         response = self.app.get("/api/v1/bucketlists/1/items/20",
                                 headers=self.make_token())
         msg = str(response.json['message'])
