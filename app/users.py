@@ -1,10 +1,8 @@
-from flask import jsonify
-from flask_restful import marshal, \
-    reqparse, Resource
+from flask_restful import marshal, reqparse, Resource
+from serializers import users_serializer
 
 from app import db
 from models import User
-from serializers import users_serializer
 
 
 class RegisterUser(Resource):
@@ -14,12 +12,8 @@ class RegisterUser(Resource):
      """
 
     def post(self):
-        """
-        request that handles User registration
-        """
         parser = reqparse.RequestParser()
-        parser.add_argument('username', required=True,
-                            type=str, help='Username is required')
+        parser.add_argument('username', required=True, type=str, help='Username is required')
         parser.add_argument('password', required=True, default='')
         args = parser.parse_args()
         username = args['username']
@@ -28,24 +22,16 @@ class RegisterUser(Resource):
         user.set_password(password)
         try:
             User.query.filter_by(username=username).one()
-            response = jsonify(
-                {'message': 'the username is already registered'})
-            response.status_code = 400
-            return response
+            message = {'message': 'the username is already registered'}
+            return message, 400
         except:
             try:
                 db.session.add(user)
                 db.session.commit()
-                response = jsonify(
-                    {'message': 'new user successfully registered!'})
-                response.status_code = 201
-                return response
-            except Exception:
-                response = jsonify(
-                    {'message': 'there was a problem while saving the data'})
-                response.status_code = 500
-                return response
-
+                message = {'message': 'new user successfully registered!'}
+                return message, 201
+            except Exception as e:
+                return e
 
 class LoginUser(Resource):
     """ Defines endpoint for User login
@@ -55,8 +41,7 @@ class LoginUser(Resource):
 
     def post(self):
         parser = reqparse.RequestParser()
-        parser.add_argument('username', required=True,
-                            type=str, help='Username is required')
+        parser.add_argument('username', required=True, type=str, help='Username is required')
         parser.add_argument('password', required=True)
         args = parser.parse_args()
         username = args['username']
@@ -72,3 +57,4 @@ class LoginUser(Resource):
         else:
             message = {'message': 'one or more fields is not complete'}
             return message, 400
+

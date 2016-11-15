@@ -1,5 +1,6 @@
 from tests import SuperTestCase
 
+import json
 
 
 class TestUtilityMethods(SuperTestCase):
