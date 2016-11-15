@@ -9,6 +9,8 @@ class Config():
     TESTING = True
     SQLALCHEMY_DATABASE_URI = "sqlite:///" + \
         os.path.join(basedir, "bucketlist.db")
+    ERROR_404_HELP = False
+
 
 
 class TestingConfig(object):
