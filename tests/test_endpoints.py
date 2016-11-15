@@ -25,9 +25,7 @@ class TestEndPoints(SuperTestCase):
         self.assertEqual(response.status_code, 404)
 
     def test_requesting_a_bucketlist_without_auth(self):
-        response = self.client.get(
-            "/api/v1/bucketlists/",
-            content_type='application/json')
+        response = self.client.get("/api/v1/bucketlists/", content_type='application/json')
         self.assertEqual(response.data, 'Unauthorized Access')
         self.assertEqual(response.status_code, 401)
 
@@ -46,6 +44,15 @@ class TestEndPoints(SuperTestCase):
         msg = str(response.json['message'])
         self.assertEqual(msg, 'There are no bucketlists available')
         self.assertEqual(response.status_code, 404)
+
+    def test_editing_a_bucketlist_without_auth(self):
+        self.buck = {"name": "tomorrowland", "description": "dance time"}
+        response = self.client.put(
+            "/api/v1/bucketlists/1", data=self.buck, headers=self.make_second_user_token(),
+            content_type='application/json')
+        msg = str(response.json['message'])
+        self.assertEqual(msg, 'You are not authorized to edit this')
+        self.assertEqual(response.status_code, 401)
 
     def test_creation_of_a_bucketlist(self):
         """ Test for creation of a bucketlist """
@@ -239,6 +246,7 @@ class TestEndPoints(SuperTestCase):
         self.assertEqual(response.status_code, 404)
 
     def test_requesting_a_none_existent_item(self):
+
         response = self.app.get("/api/v1/bucketlists/1/items/2",
                                 headers=self.make_token())
         self.assertEqual(response.status_code, 404)
