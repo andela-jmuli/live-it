@@ -63,53 +63,60 @@ class AllBucketlists(Resource):
         """ Method that gets all bucketlists """
         print("it work")
         args = request.args.to_dict()
-        page = int(args.get('page', 1)) # query start as an integer
-        limit = int(args.get('limit', 20)) # 100 items == 20 per page for 5 pages
+
         q = args.get('q')
-
-        if q:
-            bucketlists = search_bucketlists(q)
-            if not bucketlists:
-                abort(404, message='No data found matching the query')
+        try:
+            page = int(args.get('page', 1)) # query start as an integer
+            limit = int(args.get('limit', 20)) # 100 items == 20 per page for 5 pages
+            if q:
+                bucketlists = search_bucketlists(q)
+                if not bucketlists:
+                    abort(404, message='No data found matching the query')
+                else:
+                    response = marshal(bucketlists, bucketlists_serializer)
+                    return response
             else:
-                response = marshal(bucketlists, bucketlists_serializer)
-                return response
-        else:
-            # query a paginate object
-            b_lists = BucketList.query.filter_by(created_by=g.user.id).paginate(
-            page, limit, False)
+                # query a paginate object
+                b_lists = BucketList.query.filter_by(created_by=g.user.id).paginate(
+                page, limit, False)
 
-            all_pages = b_lists.pages # get total page count
-            next_pg = b_lists.has_next # check for next page
-            previous_pg = b_lists.has_prev # check for previous page
+                all_pages = b_lists.pages # get total page count
+                next_pg = b_lists.has_next # check for next page
+                previous_pg = b_lists.has_prev # check for previous page
 
-            # if the query allows a max over the limit, generate a url for the next page
-            if next_pg:
-                next_page = str(request.url_root) + 'api/v1/bucketlists?' + \
-                'limit=' + str(limit) + '&page=' + str(page + 1)
-            else:
-                next_page = 'None'
+                # if the query allows a max over the limit, generate a url for the next page
+                if next_pg:
+                    next_page = str(request.url_root) + 'api/v1/bucketlists?' + \
+                    'limit=' + str(limit) + '&page=' + str(page + 1)
+                else:
+                    next_page = 'None'
 
-            # set a url for the previous page
-            if previous_pg:
-                previous_page = str(request.url_root) + 'api/v1/bucketlists?' + \
-                'limit=' + str(limit) + '&page=' + str(page - 1)
-            else:
-                previous_page = 'None'
+                # set a url for the previous page
+                if previous_pg:
+                    previous_page = str(request.url_root) + 'api/v1/bucketlists?' + \
+                    'limit=' + str(limit) + '&page=' + str(page - 1)
+                else:
+                    previous_page = 'None'
 
-            b_lists = b_lists.items
+                b_lists = b_lists.items
 
-            data = {'bucketlists': marshal(b_lists, bucketlists_serializer),
-                    'total pages': all_pages,
-                    'next page': next_page,
-                    'previous page': previous_page }
-            # if bucketlists are not None, return data as output
-            if b_lists:
-                return data
-            else:
-                response = jsonify({'message': 'There are no bucketlists available'})
-                response.status_code = 404
-                return response
+                data = {'bucketlists': marshal(b_lists, bucketlists_serializer),
+                        'total pages': all_pages,
+                        'next page': next_page,
+                        'previous page': previous_page }
+                # if bucketlists are not None, return data as output
+                if b_lists:
+                    return data
+                else:
+                    response = jsonify({'message': 'There are no bucketlists available'})
+                    response.status_code = 404
+                    return response
+
+        except ValueError:
+            response = jsonify({'message': ' provide an integer'})
+            response.status_code = 400
+            return response
+
 
 
 class BucketlistApi(Resource):
@@ -180,6 +187,10 @@ class BucketlistApi(Resource):
         """
         Method that deletes an existing bucketlist
         """
+        if id == None:
+            response = jsonify({'message': 'Method not allowed(DELETE)'})
+            response.status_code = 400
+            return response
         # query whether the bucketlist exists
         bucketlist = BucketList.query.get(id)
 

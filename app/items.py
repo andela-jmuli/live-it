@@ -25,6 +25,10 @@ class BucketlistItem(Resource):
 
         bucketlist = BucketList.query.get(id)
         if bucketlist:
+            if bucketlist.created_by != g.user.id:
+                response = jsonify({'message': 'You are not authorized to use the bucketlist'})
+                response.status_code = 401
+                return response
             parser = reqparse.RequestParser()
             parser.add_argument('name', type=str, help='A name is required')
             parser.add_argument('description', type=str, default='')
@@ -39,7 +43,7 @@ class BucketlistItem(Resource):
 
             if not name:
                 response = jsonify(
-                    {'message': 'Please provide a name for the bucketlist'})
+                    {'message': 'Please provide a name for the item'})
                 response.status_code = 400
                 return response
 
@@ -142,7 +146,12 @@ class BucketlistItem(Resource):
             return response
 
     @multiauth.login_required
-    def delete(self, id, item_id):
+    def delete(self, id, item_id=None):
+        if item_id == None:
+            response = jsonify({'message': 'Method not allowed (DELETE)'})
+            response.status_code = 400
+            return response
+
         item = BucketListItem.query.get(item_id)
 
         if item:
