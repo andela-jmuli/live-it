@@ -25,7 +25,7 @@ class TestEndPoints(SuperTestCase):
         self.assertEqual(response.status_code, 404)
 
     def test_requesting_a_bucketlist_without_auth(self):
-        response = self.client.get("/api/v1/bucketlists/", content_type='application/json')
+        response = self.client.get("/api/v1/bucketlists", content_type='application/json')
         self.assertEqual(response.data, 'Unauthorized Access')
         self.assertEqual(response.status_code, 401)
 
@@ -39,7 +39,7 @@ class TestEndPoints(SuperTestCase):
 
     def test_requesting_bucketlists(self):
         response = self.client.get(
-            "/api/v1/bucketlists/", headers=self.make_second_user_token(),
+            "/api/v1/bucketlists", headers=self.make_second_user_token(),
             content_type='application/json')
         msg = str(response.json['message'])
         self.assertEqual(msg, 'There are no bucketlists available')
@@ -58,7 +58,7 @@ class TestEndPoints(SuperTestCase):
         """ Test for creation of a bucketlist """
         self.buck = {"name": "tomorrowland", "description": "dance time"}
         response = self.client.post(
-            "/api/v1/bucketlists/", data=self.buck, headers=self.make_token())
+            "/api/v1/bucketlists", data=self.buck, headers=self.make_token())
         msg = str(response.json['message'])
         self.assertEqual(msg, 'Bucket List updated Successfully')
         self.assertEqual(response.status_code, 200)
@@ -67,7 +67,7 @@ class TestEndPoints(SuperTestCase):
         """ Test for creation of a bucketlist """
         self.buck = {"description": "dance time"}
         response = self.client.post(
-            "/api/v1/bucketlists/", data=self.buck, headers=self.make_token())
+            "/api/v1/bucketlists", data=self.buck, headers=self.make_token())
         msg = str(response.json['message'])
         self.assertEqual(msg, 'Please provide a name for the bucketlist')
         self.assertEqual(response.status_code, 400)
@@ -76,7 +76,7 @@ class TestEndPoints(SuperTestCase):
         """ Test for creation of a bucketlist """
         self.buck = {"name": "btest1", "description": "dance time"}
         response = self.client.post(
-            "/api/v1/bucketlists/", data=self.buck, headers=self.make_token())
+            "/api/v1/bucketlists", data=self.buck, headers=self.make_token())
         msg = str(response.json['message'])
         self.assertEqual(msg, 'That name is already taken, try again')
         self.assertEqual(response.status_code, 400)
@@ -107,7 +107,7 @@ class TestEndPoints(SuperTestCase):
     def test_get_bucketlists(self):
         """ Test listing all bucketlists via a get request """
         response = self.app.get(
-            "/api/v1/bucketlists/", headers=self.make_token(),
+            "/api/v1/bucketlists", headers=self.make_token(),
             content_type='application/json')
         self.assertEqual(response.status_code, 200)
 

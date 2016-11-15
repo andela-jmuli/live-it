@@ -1,6 +1,4 @@
 from flask import g, jsonify, request
-from flask_httpauth import HTTPTokenAuth
-from flask_jwt import jwt_required
 from flask_restful import marshal, reqparse, Resource, abort
 
 from app import db
@@ -16,12 +14,8 @@ class AllBucketlists(Resource):
      """
 
     @multiauth.login_required
-    def post(self, id=None):
+    def post(self):
         """ Method to create new bucketlists """
-        if id != None:
-            response = jsonify({'message': 'Method not allowed(POST)'})
-            response.status_code = 400
-            return response
 
         parser = reqparse.RequestParser()
         parser.add_argument('name', type=str, help='A name is required')
@@ -133,9 +127,6 @@ class BucketlistApi(Resource):
         """
         Method that gets a single bucketlist
         """
-        # gets all bucketlists belonging to the user
-        # id = request.args['id']
-
         bucketlist = BucketList.query.filter_by(id=id).first()
         if bucketlist:
             if bucketlist.created_by == g.user.id:
