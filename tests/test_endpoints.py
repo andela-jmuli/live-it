@@ -31,14 +31,6 @@ class TestEndPoints(SuperTestCase):
             content_type='application/json')
         self.assertEqual(response.status_code, 400)
 
-    def test_editing_a_bucketlist(self):
-        """ Test for editing an existent bucketlist """
-        self.bucketlist = {"name": "tomorrowland", "description": "party time"}
-        response = self.app.put("/api/v1/bucketlists/2",
-                                data=self.bucketlist,
-                                headers=self.make_token())
-        self.assertEqual(response.status_code, 201)
-
     def test_deletion_of_a_bucketlist(self):
         """ Test deletion of a bucketlist """
         response = self.app.delete(

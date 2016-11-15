@@ -54,6 +54,7 @@ def search_bucketlists(q):
     bucketlists = BucketList.query.filter(BucketList.name.contains(q)).all()
     return bucketlists
 
+
 class Home(Resource):
     """
     Returns welcome message to new user
