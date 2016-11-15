@@ -10,6 +10,7 @@ class Config():
     SQLALCHEMY_DATABASE_URI = "sqlite:///" + \
         os.path.join(basedir, "bucketlist.db")
     ERROR_404_HELP = False
+    ERROR_400_HELP = False
 
 
 

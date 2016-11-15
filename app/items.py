@@ -73,8 +73,7 @@ class BucketlistItem(Resource):
                     return response
         else:
             response = jsonify(
-                {'message': 'A bucketlist with the ID \
-                 provided does not exist!'})
+                {'message': 'A bucketlist with the ID provided does not exist!'})
             response.status_code = 404
             return response
 

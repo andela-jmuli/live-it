@@ -33,9 +33,6 @@ class AllBucketlists(Resource):
         b_list = BucketList(name=name, description=description, created_by=g.user.id)
 
         if not name:
-            # response = jsonify({'message': 'Please provide a name for the bucketlist'})
-            # response.status_code = 400
-            # return response
             abort(400, message='Please provide a name for the bucketlist')
         try:
             BucketList.query.filter_by(name=name).one()
