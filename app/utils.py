@@ -44,7 +44,7 @@ def unauthorized(message=None):
 @app.errorhandler(404)
 def unauthorized(message=None):
      return make_response(jsonify(
-         {'Error': 'Data not found'}), 404)
+         {'Error': 'The requested url was not found'}), 404)
 
 @app.errorhandler(400)
 def unauthorized(message=None):

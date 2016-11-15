@@ -14,10 +14,15 @@ class BucketlistItem(Resource):
         url: /api/v1/bucketlists/<bucketlist_id>/items/
      """
     @multiauth.login_required
-    def post(self, id):
+    def post(self, id, item_id=None):
         """
         request that handles bucketlist item creation
         """
+        if item_id:
+            response = jsonify({'message': 'Method not allowed(POST)'})
+            response.status_code = 400
+            return response
+
         bucketlist = BucketList.query.get(id)
         if bucketlist:
             parser = reqparse.RequestParser()
@@ -107,9 +112,13 @@ class BucketlistItem(Resource):
             return response
 
     @multiauth.login_required
-    def get(self, id, item_id):
+    def get(self, id, item_id=None):
+        if item_id == None:
+            response = jsonify({'message': 'Method not allowed, check url'})
+            response.status_code = 400
+            return response
         bucketlist = BucketList.query.filter_by(id=id).first()
-        item = BucketListItem.query.filter_by(id=item_id).first()
+        item = BucketListItem.query.filter_by(id=item_id, bucketlist_id=id).first()
         if item:
             if item.created_by == g.user.id:
                 if bucketlist:

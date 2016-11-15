@@ -16,8 +16,13 @@ class AllBucketlists(Resource):
      """
 
     @multiauth.login_required
-    def post(self):
+    def post(self, id=None):
         """ Method to create new bucketlists """
+        if id != None:
+            response = jsonify({'message': 'Method not allowed(POST)'})
+            response.status_code = 400
+            return response
+
         parser = reqparse.RequestParser()
         parser.add_argument('name', type=str, help='A name is required')
         parser.add_argument('description', type=str, default='')
@@ -69,7 +74,6 @@ class AllBucketlists(Resource):
             else:
                 response = marshal(bucketlists, bucketlists_serializer)
                 return response
-
         else:
             # query a paginate object
             b_lists = BucketList.query.filter_by(created_by=g.user.id).paginate(
@@ -150,8 +154,8 @@ class BucketlistApi(Resource):
 
                 name = args["name"]
                 description = args["description"]
-                if not name or description:
-                    abort(400, message='Please correct the field errors')
+                if not name:
+                    abort(400, message='Please provide a name')
                 # update changes and commit to db
                 item_info = BucketList.query.filter_by(id=id).update(
                     {'name': name, 'description': description})
