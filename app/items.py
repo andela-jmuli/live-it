@@ -32,14 +32,16 @@ class BucketlistItem(Resource):
             parser = reqparse.RequestParser()
             parser.add_argument('name', type=str, help='A name is required')
             parser.add_argument('description', type=str, default='')
+            parser.add_argument('is_done', type=bool, default='false')
             args = parser.parse_args()
 
             name = args["name"]
             description = args["description"]
+            is_done = args["is_done"]
 
             item = BucketListItem(
                 name=name, description=description,
-                bucketlist_id=id, created_by=g.user.id)
+                bucketlist_id=id, is_done=is_done, created_by=g.user.id)
 
             if not name:
                 response = jsonify(
@@ -77,7 +79,11 @@ class BucketlistItem(Resource):
             return response
 
     @multiauth.login_required
-    def put(self, id, item_id):
+    def put(self, id, item_id=None):
+        if item_id == None:
+            response = jsonify({'message': 'Method not allowed, check url'})
+            response.status_code = 400
+            return response
         bucketlist = BucketList.query.get(id)
         item = BucketListItem.query.filter_by(id=item_id).one()
 
