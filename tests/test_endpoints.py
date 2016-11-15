@@ -25,9 +25,7 @@ class TestEndPoints(SuperTestCase):
         self.assertEqual(response.status_code, 404)
 
     def test_requesting_a_bucketlist_without_auth(self):
-        response = self.client.get(
-            "/api/v1/bucketlists/",
-            content_type='application/json')
+        response = self.client.get("/api/v1/bucketlists/", content_type='application/json')
         self.assertEqual(response.data, 'Unauthorized Access')
         self.assertEqual(response.status_code, 401)
 
@@ -47,20 +45,40 @@ class TestEndPoints(SuperTestCase):
         self.assertEqual(msg, 'There are no bucketlists available')
         self.assertEqual(response.status_code, 404)
 
+    def test_editing_a_bucketlist_without_auth(self):
+        self.buck = {"name": "tomorrowland", "description": "dance time"}
+        response = self.client.put(
+            "/api/v1/bucketlists/1", data=self.buck, headers=self.make_second_user_token(),
+            content_type='application/json')
+        msg = str(response.json['message'])
+        self.assertEqual(msg, 'You are not authorized to edit this')
+        self.assertEqual(response.status_code, 401)
+
     def test_creation_of_a_bucketlist(self):
         """ Test for creation of a bucketlist """
         self.buck = {"name": "tomorrowland", "description": "dance time"}
-        response = self.client.get(
-            "/api/v1/bucketlists/", data=self.buck, headers=self.make_token(),
-            content_type='application/json')
+        response = self.client.post(
+            "/api/v1/bucketlists/", data=self.buck, headers=self.make_token())
+        msg = str(response.json['message'])
+        self.assertEqual(msg, 'Bucket List updated Successfully')
         self.assertEqual(response.status_code, 200)
 
     def test_creation_of_a_bucketlist_without_name(self):
         """ Test for creation of a bucketlist """
         self.buck = {"description": "dance time"}
         response = self.client.post(
-            "/api/v1/bucketlists/", data=self.buck, headers=self.make_token(),
-            content_type='application/json')
+            "/api/v1/bucketlists/", data=self.buck, headers=self.make_token())
+        msg = str(response.json['message'])
+        self.assertEqual(msg, 'Please provide a name for the bucketlist')
+        self.assertEqual(response.status_code, 400)
+
+    def test_creation_of_a_bucketlist_with_existing_name(self):
+        """ Test for creation of a bucketlist """
+        self.buck = {"name": "btest1", "description": "dance time"}
+        response = self.client.post(
+            "/api/v1/bucketlists/", data=self.buck, headers=self.make_token())
+        msg = str(response.json['message'])
+        self.assertEqual(msg, 'That name is already taken, try again')
         self.assertEqual(response.status_code, 400)
 
     def test_deletion_of_a_bucketlist(self):
@@ -235,12 +253,38 @@ class TestEndPoints(SuperTestCase):
         self.item = {"name": "learn the guitar",
                      "description": "take guitar classes"}
         response = self.app.put(
-            "/api/v1/bucketlists/100/items/00/", headers=self.make_token())
+            "/api/v1/bucketlists/100/items/100", headers=self.make_token())
+        msg = str(response.json['message'])
+        self.assertEqual(msg, 'The bucketlist or item does not exist')
         self.assertEqual(response.status_code, 404)
 
-    def test_requesting_a_none_existent_item(self):
-        response = self.app.get("/api/v1/bucketlists/1/items/2",
+    def test_invalid_url_on_item_request(self):
+        response = self.app.get("/api/v1/bucketlists/1/items/",
                                 headers=self.make_token())
+        msg = str(response.json['message'])
+        self.assertEqual(msg, 'Method not allowed, check url')
+        self.assertEqual(response.status_code, 400)
+
+    def test_item_request_on_none_existent_bucketlist(self):
+        response = self.app.get("/api/v1/bucketlists/4/items/1",
+                                headers=self.make_token())
+        msg = str(response.json['message'])
+        self.assertEqual(msg, 'the bucketlist does not exist')
+        self.assertEqual(response.status_code, 404)
+
+    def test_invalid_credentials_on_item_request(self):
+        response = self.app.get("/api/v1/bucketlists/1/items/1",
+                                headers=self.make_second_user_token())
+        msg = str(response.json['message'])
+        self.assertEqual(msg, 'You are not authorized to view this')
+        self.assertEqual(response.status_code, 401)
+
+    def test_requesting_a_none_existent_item(self):
+
+        response = self.app.get("/api/v1/bucketlists/1/items/20",
+                                headers=self.make_token())
+        msg = str(response.json['message'])
+        self.assertEqual(msg, 'The item does not exist')
         self.assertEqual(response.status_code, 404)
 
     def test_deletion_of_an_item(self):

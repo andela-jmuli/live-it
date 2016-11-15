@@ -83,8 +83,14 @@ class BucketlistItem(Resource):
             response = jsonify({'message': 'Method not allowed, check url'})
             response.status_code = 400
             return response
-        bucketlist = BucketList.query.get(id)
-        item = BucketListItem.query.filter_by(id=item_id).one()
+        try:
+            bucketlist = BucketList.query.get(id)
+            item = BucketListItem.query.filter_by(id=item_id).one()
+        except:
+            response = jsonify(
+                {'message': 'The bucketlist or item does not exist'})
+            response.status_code = 404
+            return response
 
         if item.created_by == g.user.id:
             if bucketlist and item:
@@ -128,25 +134,20 @@ class BucketlistItem(Resource):
             return response
         bucketlist = BucketList.query.filter_by(id=id).first()
         item = BucketListItem.query.filter_by(id=item_id, bucketlist_id=id).first()
-        if item:
-            if item.created_by == g.user.id:
-                if bucketlist:
-                    if item:
-                        return marshal(item, items_serializer)
-                    else:
-                        response = jsonify({'message': 'the item does not exist'})
-                        response.status_code = 404
-                        return response
+        if bucketlist:
+            if item:
+                if item.created_by == g.user.id:
+                    return marshal(item, items_serializer)
                 else:
-                    response = jsonify({'message': 'the bucketlist does not exist'})
-                    response.status_code = 404
+                    response = jsonify({'message': 'You are not authorized to view this'})
+                    response.status_code = 401
                     return response
             else:
-                response = jsonify({'message': 'You are not authorized to view this'})
-                response.status_code = 401
+                response = jsonify({'message': 'The item does not exist'})
+                response.status_code = 404
                 return response
         else:
-            response = jsonify({'message': 'The item does not exist'})
+            response = jsonify({'message': 'the bucketlist does not exist'})
             response.status_code = 404
             return response
 
