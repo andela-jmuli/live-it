@@ -24,6 +24,10 @@ class SuperTestCase(TestCase):
         # Add dummy data for test purposes
         user = User(username="testuser")
         user.set_password('master12')
+
+        user2 = User(username="testuser2")
+        user2.set_password('password')
+
         b_list1 = BucketList(name="btest1", description="test one", created_by=1)
         b_list2 = BucketList(name="btest2", description="test two", created_by=1)
 
@@ -31,6 +35,7 @@ class SuperTestCase(TestCase):
         b_item2 = BucketListItem(name="itest2", description="part of 2nd test", created_by=1, bucketlist_id=2)
 
         db.session.add(user)
+        db.session.add(user2)
         db.session.add(b_list1)
         db.session.add(b_list2)
         db.session.add(b_item1)
@@ -44,6 +49,15 @@ class SuperTestCase(TestCase):
         token = output.get("token").encode("ascii")
         self.authorization = {'Authorization': 'Token %s' % token}
         return self.authorization
+
+    def make_second_user_token(self):
+        self.user_data = {'username':'testuser2', 'password':'password'}
+        response = self.app.post("api/v1/auth/login", data=self.user_data)
+        output = json.loads(response.data)
+        token = output.get("token").encode("ascii")
+        self.authorization = {'Authorization': 'Token %s' % token}
+        return self.authorization
+
 
     def tearDown(self):
         db.session.remove()
