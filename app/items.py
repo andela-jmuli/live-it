@@ -26,19 +26,21 @@ class BucketlistItem(Resource):
         bucketlist = BucketList.query.get(id)
         if bucketlist:
             if bucketlist.created_by != g.user.id:
-                response = jsonify({'message': 'You are not authorized to use the bucketlist'})
+                response = jsonify(
+                    {'message': 'You are not authorized to use the bucketlist'})
                 response.status_code = 401
                 return response
             parser = reqparse.RequestParser()
             parser.add_argument('name', type=str, help='A name is required')
             parser.add_argument('description', type=str, default='')
-            parser.add_argument('is_done', type=bool, default='false')
+            parser.add_argument('is_done', type=bool, default='False')
             args = parser.parse_args()
 
             name = args["name"]
             description = args["description"]
             is_done = args["is_done"]
-
+            if not is_done:
+                is_done == False
             item = BucketListItem(
                 name=name, description=description,
                 bucketlist_id=id, is_done=is_done, created_by=g.user.id)
@@ -95,7 +97,8 @@ class BucketlistItem(Resource):
         if item.created_by == g.user.id:
             if bucketlist and item:
                 parser = reqparse.RequestParser()
-                parser.add_argument('name', type=str, help='A name is required')
+                parser.add_argument(
+                    'name', type=str, help='A name is required')
                 parser.add_argument('description', type=str, default='')
                 args = parser.parse_args()
 
@@ -122,7 +125,8 @@ class BucketlistItem(Resource):
                 response.status_code = 404
                 return response
         else:
-            response = jsonify({'message': 'You are not authorized to edit this'})
+            response = jsonify(
+                {'message': 'You are not authorized to edit this'})
             response.status_code = 401
             return response
 
@@ -133,13 +137,15 @@ class BucketlistItem(Resource):
             response.status_code = 400
             return response
         bucketlist = BucketList.query.filter_by(id=id).first()
-        item = BucketListItem.query.filter_by(id=item_id, bucketlist_id=id).first()
+        item = BucketListItem.query.filter_by(
+            id=item_id, bucketlist_id=id).first()
         if bucketlist:
             if item:
                 if item.created_by == g.user.id:
                     return marshal(item, items_serializer)
                 else:
-                    response = jsonify({'message': 'You are not authorized to view this'})
+                    response = jsonify(
+                        {'message': 'You are not authorized to view this'})
                     response.status_code = 401
                     return response
             else:
@@ -169,7 +175,8 @@ class BucketlistItem(Resource):
                 response.status_code = 200
                 return response
             else:
-                response = jsonify({'message': 'You are not authorized to del this'})
+                response = jsonify(
+                    {'message': 'You are not authorized to del this'})
                 response.status_code = 401
                 return response
         else:

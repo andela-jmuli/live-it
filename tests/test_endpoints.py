@@ -1,8 +1,6 @@
 from tests import SuperTestCase
-from flask import jsonify
-from manage import app
 import json
-from werkzeug.exceptions import HTTPException
+
 
 class TestEndPoints(SuperTestCase):
     """ Endpoints being tested:
@@ -25,7 +23,8 @@ class TestEndPoints(SuperTestCase):
         self.assertEqual(response.status_code, 404)
 
     def test_requesting_a_bucketlist_without_auth(self):
-        response = self.client.get("/api/v1/bucketlists", content_type='application/json')
+        response = self.client.get(
+            "/api/v1/bucketlists", content_type='application/json')
         self.assertEqual(response.data, 'Unauthorized Access')
         self.assertEqual(response.status_code, 401)
 
@@ -208,11 +207,12 @@ class TestEndPoints(SuperTestCase):
             "/api/v1/bucketlists/200/items/", data=item_data,
             headers=self.make_token())
         msg = str(response.json['message'])
-        self.assertEqual(msg, 'A bucketlist with the ID provided does not exist!')
+        self.assertEqual(
+            msg, 'A bucketlist with the ID provided does not exist!')
         self.assertEqual(response.status_code, 404)
 
     def test_creation_of_item_in_other_users_bucketlist(self):
-        item_data = {"name": "itest8","description": "call up the hommies"}
+        item_data = {"name": "itest8", "description": "call up the hommies"}
         response = self.app.post(
             "/api/v1/bucketlists/1/items/", data=item_data,
             headers=self.make_second_user_token())
@@ -313,7 +313,8 @@ class TestEndPoints(SuperTestCase):
         self.assertEqual(response.status_code, 404)
 
     def test_deleting_an_item_with_invalid_url(self):
-        response = self.app.delete("/api/v1/bucketlists/2/items/",headers=self.make_token(),content_type='application/json')
+        response = self.app.delete("/api/v1/bucketlists/2/items/",
+                                   headers=self.make_token(), content_type='application/json')
         msg = str(response.json['message'])
         self.assertEqual(msg, 'Method not allowed (DELETE)')
         self.assertEqual(response.status_code, 400)

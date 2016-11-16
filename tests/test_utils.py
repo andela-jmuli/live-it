@@ -1,7 +1,6 @@
 from tests import SuperTestCase
 
 
-
 class TestUtilityMethods(SuperTestCase):
 
     def test_home_endpoint(self):

@@ -7,6 +7,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 
 s = Serializer(config_settings['SECRET_KEY'], expires_in=10000)
 
+
 class User(db.Model):
     """ User Model """
     __tablename__ = "users"

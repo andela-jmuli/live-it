@@ -18,7 +18,8 @@ class TestUsers(SuperTestCase):
                           "password": "passsword"}
         response = self.app.post("/api/v1/auth/register", data=self.user_data)
         msg = json.loads(response.data)
-        self.assertEqual(str(msg['message']), 'the username is already registered')
+        self.assertEqual(str(msg['message']),
+                         'the username is already registered')
         self.assertEqual(response.status_code, 400)
 
     def test_succesful_login(self):

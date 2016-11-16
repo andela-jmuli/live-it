@@ -13,7 +13,6 @@ class Config():
     ERROR_400_HELP = False
 
 
-
 class TestingConfig(object):
     " testing  configurations "
     DEBUG = True
