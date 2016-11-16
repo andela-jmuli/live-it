@@ -86,12 +86,9 @@ The key should be Authorization and the value should be prefixed with Token then
 ![Alt text](/source/create_bucketlist.png?raw=true "Optional Title")
 
 
-
 4. Listing all bucketlists:  
-> Ensure the URL points to http://localhost:5000/api/v1/bucketlists/ as a GET request.
-This is also a secure request thus make sure you include the token as a header during this request as below:  
-The key should be Authorization and the value should be prefixed with Token then [token]: i.e.  
-``` Authorization : Token sdvbjsdvnskdvna;scma;scma;cfskvbjrv ```  
+> Ensure the URL points to http://localhost:5000/api/v1/bucketlists/ as a GET request.  
+This is also a secure request thus make sure you include the token as a header during this request.  
 
 ![Alt text](/source/list_all_bucketlists.png?raw=true "Optional Title")
 
@@ -99,17 +96,13 @@ The key should be Authorization and the value should be prefixed with Token then
 > Ensure the URL points to http://localhost:5000/api/v1/bucketlists/bucketlist_id/items as a POST request.
 You have to ensure you have a bucketlist in order to create an item in it.
 This is also a parameterized request thus you need to provide an item name and optionally description
-This is also a secure request thus make sure you include the token as a header during this request as below:  
-The key should be Authorization and the value should be prefixed with Token then [token]: i.e.  
-``` Authorization : Token sdvbjsdvnskdvna;scma;scma;cfskvbjrv ```
+This is also a secure request thus make sure you include the token as a header during this request.
 
 ![Alt text](/source/create_bucketlist_item.png?raw=true "Optional Title")
 
 6. Listing all bucketlists with items:  
-> Ensure the URL points to http://localhost:5000/api/v1/bucketlists/ as a GET request.
-This is also a secure request thus make sure you include the token as a header during this request as below:  
-The key should be Authorization and the value should be prefixed with Token then [token]: i.e.  
-``` Authorization : Token sdvbjsdvnskdvna;scma;scma;cfskvbjrv ```  
+> Ensure the URL points to http://localhost:5000/api/v1/bucketlists/ as a GET request.  
+This is also a secure request thus make sure you include the token as a header during this request
 
 ![Alt text](/source/list_all_bucketlists.png?raw=true "Optional Title")
 
