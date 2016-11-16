@@ -12,24 +12,91 @@ live-it is a bucket list RESTful API that allows creating and editing of bucket 
 1. [Flask](http://flask.pocoo.org/)
 2. [Flask-SQLAlchemy]()
 3. [Python 2.7](https://www.python.org/)  
+4. [flask_httpauth](https://flask-httpauth.readthedocs.io/en/latest/)  
+5. [flask_restful](http://flask-restful-cn.readthedocs.io/en/0.3.5/)  
+6. [flask_testing](http://flask.pocoo.org/docs/0.11/testing/)
 
 ## Installation and Setup:
 
 * Navigate to your directory choice
 * Clone the repository:
- * Using SSH: ``` git@github.com:andela-jmuli/live-it.git ```
- * Using HTTP ``` https://github.com/andela-jmuli/live-it.git ```
+ * Using SSH:  
+    ``` git@github.com:andela-jmuli/live-it.git ```
+
+ * Using HTTP  
+    ``` https://github.com/andela-jmuli/live-it.git ```
 * Setup a virtualenvironment for dependencies:
- * virtualenv {{ desired name }}
-* Activate your environment
- * ``` cd ``` into folder and run ``` source bin/activate ```
+    * virtualenv {{ desired name }}
+    * Activate your environment
+* ``` cd ``` into folder and run ``` source bin/activate ``` to activate the virtual environment
 * Install the dependencies:
- * ``` pip install -r reqiuirements.txt ```
+    * ``` pip install -r reqiuirements.txt ```
 
-## Usage:
+* ```cd ``` back to the project root
+
+* Setup the database tables and migrations:  
+
+    * python manage.py db init
+    * python manage.py db migrate
+    * python manage.py db upgrade
+
+* Run the server via:
+    * python manage.py runserver
+
+* you may user Chrome's extension [Postman](https://www.getpostman.com/) to view or use api
+
+## Usage:  
+#### Endpoints  
 
 
-## Testing:
+| Tables        | Are           | Requires Authentication |
+| ------------- |:-------------:| -------------:|
+| POST auth/login    | Log a user in | False |
+| POST auth/register     | Register a new user | False |
+| POST /bucketlists/ | Create a new bucketlist   | True |
+| GET /bucketlists/      | List all created bucketlists | True |
+| GET /bucketlists/id     | get single bucketlist | True |
+| PUT /bucketlists/id | update single bucketlist | True |
+| DELETE bucketlists/id      | Delete a single bucketlist | True |
+| POST bucketlists/id/items/      | Create a new item in a bucketlist | True |
+| PUT bucketlists/id/items/item_id | Update an item in a bucketlist | True |
+| DELETE bucketlists/id/items/item_id      | Delete an item in a bucketlist | True |
+
+#### Use Cases:
+
+1. Registering a new user:  
+> Ensure the URL points to http://localhost:5000/api/v1/auth/register/ as a POST request:
+
+2. Authenticating a user (Login)
+> Ensure the URL points to http://localhost:5000/api/v1/auth/login/ as a POST request:
+
+3. Creating a Bucketlist:
+> Ensure the URL points to http://localhost:5000/api/v1/auth/bucketlists/ as a POST request.
+This is a parameterized request thus you need to provide a name and optionally description
+This is also a secure request thus make sure you include the token as a header during this request as below:  
+The key should be Authorization and the value should be prefixed with Token then [token]: i.e.  
+``` Authorization : Token sdvbjsdvnskdvna;scma;scma;cfskvbjrv ```  
+
+![Alt text](/source/create_bucketlist.png?raw=true "Optional Title")
+
+
+
+4. Listing all bucketlists:  
+> Ensure the URL points to http://localhost:5000/api/v1/auth/bucketlists/ as a GET request.
+This is also a secure request thus make sure you include the token as a header during this request as below:  
+The key should be Authorization and the value should be prefixed with Token then [token]: i.e.  
+``` Authorization : Token sdvbjsdvnskdvna;scma;scma;cfskvbjrv ```  
+
+4. Creating a bucketlist item:  
+> Ensure the URL points to http://localhost:5000/api/v1/auth/bucketlists/bucketlist_id/items as a POST request.
+You have to ensure you have a bucketlist in order to create an item in it.
+This is also a parameterized request thus you need to provide an item name and optionally description
+This is also a secure request thus make sure you include the token as a header during this request as below:  
+The key should be Authorization and the value should be prefixed with Token then [token]: i.e.  
+``` Authorization : Token sdvbjsdvnskdvna;scma;scma;cfskvbjrv ```
+
+## Testing:  
+ To test, run the command tox
 
 ## Licence:
 Check out the License file for more information
