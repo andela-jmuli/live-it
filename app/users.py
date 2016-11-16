@@ -64,13 +64,18 @@ class LoginUser(Resource):
         args = parser.parse_args()
         username = args['username']
         password = args['password']
+        
         if username and password:
             user = User.query.filter_by(username=username).first()
-            if user and user.verify_password(password):
-                user_token = user.generate_auth_token()
-                return {'token': user_token}, 200
+            if user:
+                if user.verify_password(password):
+                    user_token = user.generate_auth_token()
+                    return {'token': user_token}, 200
+                else:
+                    message = {'message': 'Invalid password'}
+                    return message
             else:
-                message = {'message': 'Invalid password'}
+                message = {'message': 'The user does not exist'}
                 return message
         else:
             message = {'message': 'one or more fields is not complete'}

@@ -6,6 +6,7 @@
 [![license](https://img.shields.io/github/license/mashape/apistatus.svg)]()
 ## Introduction:
 live-it is a bucket list RESTful API that allows creating and editing of bucket lists -- These are a number of experiences or achievements that a person hopes to have or accomplish during their lifetime.  
+A quick demo can be viewed [here](https://www.youtube.com/watch?v=xpzk1bfH6eM&feature=youtu.be)
 
 ## Dependencies:
 
@@ -68,7 +69,7 @@ live-it is a bucket list RESTful API that allows creating and editing of bucket 
 Ensure the URL points to http://localhost:5000/api/v1/auth/register/ as a POST request:  
 This is a parameterized request thus you need to provide a name and password
 
-![Alt text](/source/registe_new_user.png?raw=true "Optional Title") . 
+![Alt text](/source/registe_new_user.png?raw=true "Optional Title") .
 
 **Authenticating a user (Login)**
 Ensure the URL points to http://localhost:5000/api/v1/auth/login/ as a POST request:  

@@ -33,14 +33,15 @@ class BucketlistItem(Resource):
             parser = reqparse.RequestParser()
             parser.add_argument('name', type=str, help='A name is required')
             parser.add_argument('description', type=str, default='')
-            parser.add_argument('is_done', type=bool, default='False')
+            parser.add_argument('is_done', type=bool, default=False)
             args = parser.parse_args()
 
             name = args["name"]
             description = args["description"]
             is_done = args["is_done"]
-            if not is_done:
+            if not is_done or type(is_done) != bool:
                 is_done == False
+
             item = BucketListItem(
                 name=name, description=description,
                 bucketlist_id=id, is_done=is_done, created_by=g.user.id)
@@ -103,13 +104,19 @@ class BucketlistItem(Resource):
                 parser.add_argument(
                     'name', type=str, help='A name is required')
                 parser.add_argument('description', type=str, default='')
+                parser.add_argument('is_done', type=bool, default=False)
                 args = parser.parse_args()
 
                 name = args["name"]
                 description = args["description"]
 
+                is_done = args["is_done"]
+
+                if not name or name == None:
+                    abort(400, message='Please provide a name')
+
                 item_info = BucketListItem.query.filter_by(id=item_id).update(
-                    {'name': name, 'description': description})
+                    {'name': name, 'description': description, 'is_done': is_done})
 
                 try:
                     db.session.commit()

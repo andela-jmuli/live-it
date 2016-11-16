@@ -34,29 +34,27 @@ class AllBucketlists(Resource):
                 {'message': 'Please provide a name for the bucketlist'})
             response.status_code = 400
             return response
-            # abort(400, message='Please provide a name for the bucketlist')
-        try:
-            BucketList.query.filter_by(name=name).one()
+        # check for similar name on bucketlists created by current user
+        bucks = BucketList.query.filter_by(name=name, created_by=g.user.id).first()
+        if bucks:
             response = jsonify(
-                {'message': 'That name is already taken, try again'})
+                {'message': 'You already have a bucketlist with that name'})
             response.status_code = 400
             return response
+        try:
+            db.session.add(b_list)
+            db.session.commit()
+            message = {'message': 'Bucket List updated Successfully'}
+            response = marshal(b_list, bucketlists_serializer)
+            response.update(message)
+            response.status_code = 201
+            return response
 
-        except:
-            try:
-                db.session.add(b_list)
-                db.session.commit()
-                message = {'message': 'Bucket List updated Successfully'}
-                response = marshal(b_list, bucketlists_serializer)
-                response.update(message)
-                response.status_code = 201
-                return response
-
-            except Exception:
-                response = jsonify(
-                    {'message': 'There was an error saving the bucketlist'})
-                response.status_code = 400
-                return response
+        except Exception:
+            response = jsonify(
+                {'message': 'There was an error saving the bucketlist'})
+            response.status_code = 400
+            return response
 
     @multiauth.login_required
     def get(self):
@@ -75,49 +73,49 @@ class AllBucketlists(Resource):
                 else:
                     response = marshal(bucketlists, bucketlists_serializer)
                     return response
-            else:
-                try:
-                    # query a paginate object
-                    b_lists = BucketList.query.filter_by(created_by=g.user.id).paginate(
-                        page, limit, False)
 
-                    all_pages = b_lists.pages  # get total page count
-                    next_pg = b_lists.has_next  # check for next page
-                    previous_pg = b_lists.has_prev  # check for previous page
+            try:
+                # query a paginate object
+                b_lists = BucketList.query.filter_by(created_by=g.user.id).paginate(
+                    page, limit, False)
 
-                    # if the query allows a max over the limit, generate a url
-                    # for the next page
-                    if next_pg:
-                        next_page = str(request.url_root) + 'api/v1/bucketlists?' + \
-                            'limit=' + str(limit) + '&page=' + str(page + 1)
-                    else:
-                        next_page = 'None'
+                all_pages = b_lists.pages  # get total page count
+                next_pg = b_lists.has_next  # check for next page
+                previous_pg = b_lists.has_prev  # check for previous page
 
-                    # set a url for the previous page
-                    if previous_pg:
-                        previous_page = str(request.url_root) + 'api/v1/bucketlists?' + \
-                            'limit=' + str(limit) + '&page=' + str(page - 1)
-                    else:
-                        previous_page = 'None'
+                # if the query allows a max over the limit, generate a url
+                # for the next page
+                if next_pg:
+                    next_page = str(request.url_root) + 'api/v1/bucketlists?' + \
+                        'limit=' + str(limit) + '&page=' + str(page + 1)
+                else:
+                    next_page = 'None'
 
-                    b_lists = b_lists.items
+                # set a url for the previous page
+                if previous_pg:
+                    previous_page = str(request.url_root) + 'api/v1/bucketlists?' + \
+                        'limit=' + str(limit) + '&page=' + str(page - 1)
+                else:
+                    previous_page = 'None'
 
-                    data = {'bucketlists': marshal(b_lists, bucketlists_serializer),
-                            'total pages': all_pages,
-                            'next page': next_page,
-                            'previous page': previous_page}
-                    # if bucketlists are not None, return data as output
-                    if b_lists:
-                        return data
-                    else:
-                        response = jsonify(
-                            {'message': 'There are no bucketlists available'})
-                        response.status_code = 404
-                        return response
-                except AttributeError:
-                    response = jsonify({'message': 'Authenticate to proceed'})
-                    response.status_code = 401
+                b_lists = b_lists.items
+
+                data = {'bucketlists': marshal(b_lists, bucketlists_serializer),
+                        'total pages': all_pages,
+                        'next page': next_page,
+                        'previous page': previous_page}
+                # if bucketlists are not None, return data as output
+                if b_lists:
+                    return data
+                else:
+                    response = jsonify(
+                        {'message': 'There are no bucketlists available'})
+                    response.status_code = 404
                     return response
+            except AttributeError:
+                response = jsonify({'message': 'Authenticate to proceed'})
+                response.status_code = 401
+                return response
 
         except ValueError:
             response = jsonify({'message': ' provide an integer'})
@@ -136,13 +134,10 @@ class BucketlistApi(Resource):
         """
         Method that gets a single bucketlist
         """
-        bucketlist = BucketList.query.filter_by(id=id).first()
+        bucketlist = BucketList.query.filter_by(id=id, created_by=g.user.id).first()
         if bucketlist:
-            if bucketlist.created_by == g.user.id:
-                response = marshal(bucketlist, bucketlists_serializer)
-                return response
-            else:
-                abort(401, message='You are not authorized to view this')
+            response = marshal(bucketlist, bucketlists_serializer)
+            return response
         else:
             response = jsonify({'message': 'the bucketlist does not exist'})
             response.status_code = 404
@@ -165,8 +160,9 @@ class BucketlistApi(Resource):
 
                 name = args["name"]
                 description = args["description"]
-                if not name:
+                if not name or name == None:
                     abort(400, message='Please provide a name')
+
                 # update changes and commit to db
                 item_info = BucketList.query.filter_by(id=id).update(
                     {'name': name, 'description': description})

@@ -33,8 +33,8 @@ class TestEndPoints(SuperTestCase):
             "/api/v1/bucketlists/1", headers=self.make_second_user_token(),
             content_type='application/json')
         msg = str(response.json['message'])
-        self.assertEqual(msg, 'You are not authorized to view this')
-        self.assertEqual(response.status_code, 401)
+        self.assertEqual(msg, 'the bucketlist does not exist')
+        self.assertEqual(response.status_code, 404)
 
     def test_requesting_bucketlists(self):
         response = self.client.get(
@@ -72,12 +72,12 @@ class TestEndPoints(SuperTestCase):
         self.assertEqual(response.status_code, 400)
 
     def test_creation_of_a_bucketlist_with_existing_name(self):
-        """ Test for creation of a bucketlist """
+        """ Test for creation of a bucketlist with existing name """
         self.buck = {"name": "btest1", "description": "dance time"}
         response = self.client.post(
             "/api/v1/bucketlists", data=self.buck, headers=self.make_token())
         msg = str(response.json['message'])
-        self.assertEqual(msg, 'That name is already taken, try again')
+        self.assertEqual(msg, 'You already have a bucketlist with that name')
         self.assertEqual(response.status_code, 400)
 
     def test_deletion_of_a_bucketlist(self):
@@ -222,11 +222,11 @@ class TestEndPoints(SuperTestCase):
 
     def test_editing_an_item(self):
         """ Test for editing an item """
-        self.item = {"name": "learn the guitar",
-                     "description": "take guitar classes"}
+        self.item = {"name": "learn the guitar", "description":"take guitar classes"}
         response = self.app.put(
-            "/api/v1/bucketlists/1/items/1", headers=self.make_token())
+            "/api/v1/bucketlists/1/items/1", headers=self.make_token(), data=self.item)
         msg = str(response.json['message'])
+        print(self.item)
         self.assertEqual(msg, 'Bucket List item updated')
         self.assertEqual(response.status_code, 200)
 

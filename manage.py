@@ -18,8 +18,7 @@ api.add_resource(RegisterUser, "/api/v1/auth/register",
                  "/api/v1/auth/register/", endpoint="register")
 api.add_resource(LoginUser, "/api/v1/auth/login",
                  "/api/v1/auth/login/", endpoint="login")
-api.add_resource(AllBucketlists, "/api/v1/bucketlists",
-                 "/api/v1/bucketlists/", endpoint="bucketlists")
+api.add_resource(AllBucketlists, "/api/v1/bucketlists",endpoint="bucketlists")
 api.add_resource(BucketlistApi, "/api/v1/bucketlists/<id>",
                  "/api/v1/bucketlists/<id>/", endpoint="single_bucket_list")
 api.add_resource(BucketlistItem, "/api/v1/bucketlists/<id>/items",
