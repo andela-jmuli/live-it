@@ -16,12 +16,21 @@ class User(db.Model):
     password_hash = db.Column(db.String(128))
 
     def set_password(self, password):
+        '''
+        method that hashes a user's password
+        '''
         self.password_hash = generate_password_hash(password)
 
     def verify_password(self, password):
+        '''
+        method that verifies a user's password
+        '''
         return check_password_hash(self.password_hash, password)
 
     def generate_auth_token(self, expires_in=10000):
+        '''
+        method that generates the token for authentication
+        '''
         return s.dumps({'id': self.id}).decode('utf-8')
 
 

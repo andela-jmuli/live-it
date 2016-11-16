@@ -81,6 +81,9 @@ class BucketlistItem(Resource):
 
     @multiauth.login_required
     def put(self, id, item_id=None):
+        """
+        request that updates an item
+        """
         if item_id == None:
             response = jsonify({'message': 'Method not allowed, check url'})
             response.status_code = 400
@@ -132,6 +135,9 @@ class BucketlistItem(Resource):
 
     @multiauth.login_required
     def get(self, id, item_id=None):
+        """
+        request that lists a single item
+        """
         if item_id == None:
             response = jsonify({'message': 'Method not allowed, check url'})
             response.status_code = 400
@@ -159,6 +165,9 @@ class BucketlistItem(Resource):
 
     @multiauth.login_required
     def delete(self, id, item_id=None):
+        """
+        request that deletes an item
+        """
         if item_id == None:
             response = jsonify({'message': 'Method not allowed (DELETE)'})
             response.status_code = 400

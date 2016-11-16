@@ -54,6 +54,9 @@ class LoginUser(Resource):
      """
 
     def post(self):
+        '''
+        request that handles login
+        '''
         parser = reqparse.RequestParser()
         parser.add_argument('username', required=True,
                             type=str, help='Username is required')
