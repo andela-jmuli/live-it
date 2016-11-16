@@ -64,20 +64,20 @@ live-it is a bucket list RESTful API that allows creating and editing of bucket 
 
 #### Use Cases:
 
-1. Registering a new user:  
-> Ensure the URL points to http://localhost:5000/api/v1/auth/register/ as a POST request:  
+**Registering a new user:**  
+Ensure the URL points to http://localhost:5000/api/v1/auth/register/ as a POST request:  
 This is a parameterized request thus you need to provide a name and password
 
-![Alt text](/source/registe_new_user.png?raw=true "Optional Title")
+![Alt text](/source/registe_new_user.png?raw=true "Optional Title") . 
 
-2. Authenticating a user (Login)
-> Ensure the URL points to http://localhost:5000/api/v1/auth/login/ as a POST request:  
+**Authenticating a user (Login)**
+Ensure the URL points to http://localhost:5000/api/v1/auth/login/ as a POST request:  
 This is a parameterized request thus you need to provide a name and password
 
 ![Alt text](/source/login_users.png?raw=true "Optional Title")
 
-3. Creating a Bucketlist:
-> Ensure the URL points to http://localhost:5000/api/v1/bucketlists/ as a POST request.
+**Creating a Bucketlist:**
+Ensure the URL points to http://localhost:5000/api/v1/bucketlists/ as a POST request.
 This is a parameterized request thus you need to provide a name and optionally description
 This is also a secure request thus make sure you include the token as a header during this request as below:  
 The key should be Authorization and the value should be prefixed with Token then [token]: i.e.  
@@ -85,23 +85,22 @@ The key should be Authorization and the value should be prefixed with Token then
 
 ![Alt text](/source/create_bucketlist.png?raw=true "Optional Title")
 
-
-4. Listing all bucketlists:  
-> Ensure the URL points to http://localhost:5000/api/v1/bucketlists/ as a GET request.  
+**Listing all bucketlists:**  
+Ensure the URL points to http://localhost:5000/api/v1/bucketlists/ as a GET request.  
 This is also a secure request thus make sure you include the token as a header during this request.  
 
 ![Alt text](/source/list_all_bucketlists.png?raw=true "Optional Title")
 
-5. Creating a bucketlist item:  
-> Ensure the URL points to http://localhost:5000/api/v1/bucketlists/bucketlist_id/items as a POST request.
+**Creating a bucketlist item:**  
+Ensure the URL points to http://localhost:5000/api/v1/bucketlists/bucketlist_id/items as a POST request.
 You have to ensure you have a bucketlist in order to create an item in it.
 This is also a parameterized request thus you need to provide an item name and optionally description
 This is also a secure request thus make sure you include the token as a header during this request.
 
 ![Alt text](/source/create_bucketlist_item.png?raw=true "Optional Title")
 
-6. Listing all bucketlists with items:  
-> Ensure the URL points to http://localhost:5000/api/v1/bucketlists/ as a GET request.  
+**Listing all bucketlists with items:**  
+Ensure the URL points to http://localhost:5000/api/v1/bucketlists/ as a GET request.  
 This is also a secure request thus make sure you include the token as a header during this request
 
 ![Alt text](/source/list_all_bucketlists.png?raw=true "Optional Title")
