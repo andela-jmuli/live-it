@@ -1,28 +1,34 @@
-from functools import wraps
-from flask import g, jsonify, request, make_response
+from flask import g, jsonify, make_response
 from flask_httpauth import HTTPBasicAuth, HTTPTokenAuth, MultiAuth
 from flask_restful import Resource
 from itsdangerous import (
     TimedJSONWebSignatureSerializer as Serializer, BadSignature, SignatureExpired)
-from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.security import check_password_hash
 
 from app import app
-from config.config import config_settings
-from models import User, BucketList, BucketListItem, s
+from models import User, BucketList, s
 
 basic_auth = HTTPBasicAuth()
 token_auth = HTTPTokenAuth('Token')
 multiauth = MultiAuth(basic_auth, token_auth)
 
+
 @basic_auth.verify_password
 def verify_password(username, password):
+    '''
+    method that verifies a user's password
+    '''
     user_det = User.query.filter_by(username=username).first()
     if user_det and check_password_hash(user_det.password, password):
         return True
     return False
 
+
 @token_auth.verify_token
 def verify_token(token):
+    '''
+    method that verifies a token
+    '''
     try:
         data = s.loads(token)
     except SignatureExpired:
@@ -35,22 +41,39 @@ def verify_token(token):
         return True
     return False
 
+
 @app.errorhandler(403)
 def unauthorized(message=None):
+    '''
+    403 error handler
+    '''
     return make_response(jsonify(
         {'Error': 'Invalid token given, '
          'Login again to gain access'}), 403)
 
+
 @app.errorhandler(404)
 def unauthorized(message=None):
-     return make_response(jsonify(
-         {'Error': 'Data not found'}), 404)
+    '''
+    404 error handler
+    '''
+    return make_response(jsonify(
+        {'Error': 'The requested url was not found'}), 404)
+
 
 @app.errorhandler(400)
 def unauthorized(message=None):
-     return make_response(jsonify(
-         {'Error': 'Bad request'}), 400)
+    '''
+    400 error handler
+    '''
+    return make_response(jsonify(
+        {'Error': 'Bad request'}), 400)
+
+
 def search_bucketlists(q):
+    '''
+    method that gets data based on search query provided
+    '''
     bucketlists = BucketList.query.filter(BucketList.name.contains(q)).all()
     return bucketlists
 
@@ -64,6 +87,9 @@ class Home(Resource):
     """
 
     def get(self):
+        '''
+        request that renders the API's welcome message
+        '''
         response = jsonify(
             {"message": "Welcome to live-it! To get started, register a new user or login"})
         return response

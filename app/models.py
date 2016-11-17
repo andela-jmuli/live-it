@@ -1,5 +1,3 @@
-import os
-from . import app
 from app import db
 from config.config import config_settings
 from flask_sqlalchemy import SQLAlchemy
@@ -9,6 +7,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 
 s = Serializer(config_settings['SECRET_KEY'], expires_in=10000)
 
+
 class User(db.Model):
     """ User Model """
     __tablename__ = "users"
@@ -17,12 +16,21 @@ class User(db.Model):
     password_hash = db.Column(db.String(128))
 
     def set_password(self, password):
+        '''
+        method that hashes a user's password
+        '''
         self.password_hash = generate_password_hash(password)
 
     def verify_password(self, password):
+        '''
+        method that verifies a user's password
+        '''
         return check_password_hash(self.password_hash, password)
 
     def generate_auth_token(self, expires_in=10000):
+        '''
+        method that generates the token for authentication
+        '''
         return s.dumps({'id': self.id}).decode('utf-8')
 
 
@@ -30,7 +38,7 @@ class BucketList(db.Model):
     """ BucketList Model """
     __tablename__ = 'bucketlists'
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(50), unique=True)
+    name = db.Column(db.String(50), unique=False)
     description = db.Column(db.Text)
     date_created = db.Column(db.DateTime, default=db.func.current_timestamp())
     date_modified = db.Column(db.DateTime, default=db.func.current_timestamp())
@@ -44,7 +52,7 @@ class BucketListItem(db.Model):
     """ Bucketlist Item model """
     __tablename__ = 'items'
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(50), unique=True)
+    name = db.Column(db.String(50), unique=False)
     description = db.Column(db.Text)
     bucketlist_id = db.Column(db.Integer, db.ForeignKey('bucketlists.id'))
     created_by = db.Column(db.Integer, db.ForeignKey("users.id"))
