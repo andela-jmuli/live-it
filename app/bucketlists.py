@@ -69,7 +69,7 @@ class AllBucketlists(Resource):
             if q:
                 bucketlists = search_bucketlists(q)
                 if not bucketlists:
-                    abort(404, message='No data found matching the query')
+                    abort(204, message='No data found matching the query')
                 else:
                     response = marshal(bucketlists, bucketlists_serializer)
                     return response
@@ -110,7 +110,7 @@ class AllBucketlists(Resource):
                 else:
                     response = jsonify(
                         {'message': 'There are no bucketlists available'})
-                    response.status_code = 404
+                    response.status_code = 204
                     return response
             except AttributeError:
                 response = jsonify({'message': 'Authenticate to proceed'})
@@ -140,7 +140,7 @@ class BucketlistApi(Resource):
             return response
         else:
             response = jsonify({'message': 'the bucketlist does not exist'})
-            response.status_code = 404
+            response.status_code = 204
             return response
 
     @multiauth.login_required
@@ -160,12 +160,13 @@ class BucketlistApi(Resource):
 
                 name = args["name"]
                 description = args["description"]
+                data = {'name': name, 'description': description}
                 if not name or name == None:
-                    abort(400, message='Please provide a name')
+                    data = {'description': description}
 
                 # update changes and commit to db
                 item_info = BucketList.query.filter_by(id=id).update(
-                    {'name': name, 'description': description})
+                    data)
 
                 try:
                     db.session.commit()
@@ -182,7 +183,9 @@ class BucketlistApi(Resource):
             else:
                 abort(401, message='You are not authorized to edit this')
         else:
-            abort(404, message='The bucketlist does not exist')
+            response = jsonify({'message': 'the bucketlist does not exist'})
+            response.status_code = 204
+            return response
 
     @multiauth.login_required
     def delete(self, id):
@@ -209,5 +212,7 @@ class BucketlistApi(Resource):
                 return response
             else:
                 abort(401, message='You are not authorized to delete this')
-        else:  # else return a 404 response
-            abort(404, message='The bucketlist does not exist')
+        else:  # else return a 204 response
+            response = jsonify({'message': 'the bucketlist does not exist'})
+            response.status_code = 204
+            return response

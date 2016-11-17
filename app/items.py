@@ -38,6 +38,12 @@ class BucketlistItem(Resource):
 
             name = args["name"]
             description = args["description"]
+
+            if not name:
+                response = jsonify(
+                    {'message': 'Please provide a name for the bucketlist item'})
+                response.status_code = 400
+                return response
             is_done = args["is_done"]
             if not is_done or type(is_done) != bool:
                 is_done == False
@@ -77,7 +83,7 @@ class BucketlistItem(Resource):
         else:
             response = jsonify(
                 {'message': 'A bucketlist with the ID provided does not exist!'})
-            response.status_code = 404
+            response.status_code = 204
             return response
 
     @multiauth.login_required
@@ -95,7 +101,7 @@ class BucketlistItem(Resource):
         except:
             response = jsonify(
                 {'message': 'The bucketlist or item does not exist'})
-            response.status_code = 404
+            response.status_code = 204
             return response
 
         if item.created_by == g.user.id:
@@ -112,11 +118,11 @@ class BucketlistItem(Resource):
 
                 is_done = args["is_done"]
 
+                data = {'name': name, 'description': description, 'is_done':is_done}
                 if not name or name == None:
-                    abort(400, message='Please provide a name')
+                    data = {'description': description, 'is_done': is_done}
 
-                item_info = BucketListItem.query.filter_by(id=item_id).update(
-                    {'name': name, 'description': description, 'is_done': is_done})
+                item_info = BucketListItem.query.filter_by(id=item_id).update(data)
 
                 try:
                     db.session.commit()
@@ -132,7 +138,7 @@ class BucketlistItem(Resource):
             else:
                 response = jsonify(
                     {'message': 'The bucketlist or item does not exist'})
-                response.status_code = 404
+                response.status_code = 204
                 return response
         else:
             response = jsonify(
@@ -163,11 +169,11 @@ class BucketlistItem(Resource):
                     return response
             else:
                 response = jsonify({'message': 'The item does not exist'})
-                response.status_code = 404
+                response.status_code = 204
                 return response
         else:
             response = jsonify({'message': 'the bucketlist does not exist'})
-            response.status_code = 404
+            response.status_code = 204
             return response
 
     @multiauth.login_required
@@ -197,5 +203,5 @@ class BucketlistItem(Resource):
                 return response
         else:
             response = jsonify({'message': 'The item does not exist'})
-            response.status_code = 404
+            response.status_code = 204
             return response

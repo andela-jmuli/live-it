@@ -32,17 +32,13 @@ class TestEndPoints(SuperTestCase):
         response = self.client.get(
             "/api/v1/bucketlists/1", headers=self.make_second_user_token(),
             content_type='application/json')
-        msg = str(response.json['message'])
-        self.assertEqual(msg, 'the bucketlist does not exist')
-        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.status_code, 204)
 
     def test_requesting_bucketlists(self):
         response = self.client.get(
             "/api/v1/bucketlists", headers=self.make_second_user_token(),
             content_type='application/json')
-        msg = str(response.json['message'])
-        self.assertEqual(msg, 'There are no bucketlists available')
-        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.status_code, 204)
 
     def test_editing_a_bucketlist_without_auth(self):
         self.buck = {"name": "tomorrowland", "description": "dance time"}
@@ -101,7 +97,7 @@ class TestEndPoints(SuperTestCase):
         response = self.app.delete(
             "/api/v1/bucketlists/1200", headers=self.make_token(),
             content_type='application/json')
-        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.status_code, 204)
 
     def test_get_bucketlists(self):
         """ Test listing all bucketlists via a get request """
@@ -116,7 +112,7 @@ class TestEndPoints(SuperTestCase):
         response = self.app.put(
             "/api/v1/bucketlists/2000", data=self.bucketlist,
             headers=self.make_token(), content_type='application/json')
-        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.status_code, 204)
 
     def test_editing_a_bucketlist_without_auth(self):
         self.buck = {"name": "tomorrowland", "description": "dance time"}
@@ -152,7 +148,7 @@ class TestEndPoints(SuperTestCase):
         """ Test get request on a none existent bucketlist """
         response = self.app.get("/api/v1/bucketlists/350",
                                 headers=self.make_token())
-        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.status_code, 204)
 
     def test_input_on_get_bucketlists_request(self):
         response = self.app.get("/api/v1/bucketlists?limit=abc",
@@ -187,7 +183,7 @@ class TestEndPoints(SuperTestCase):
             "/api/v1/bucketlists/2/items/", data=item_data,
             headers=self.make_token())
         msg = str(response.json['message'])
-        self.assertEqual(msg, 'Please provide a name for the item')
+        self.assertEqual(msg, 'Please provide a name for the bucketlist item')
         self.assertEqual(response.status_code, 400)
 
     def test_creation_of_item_with_existing_item_name(self):
@@ -206,10 +202,7 @@ class TestEndPoints(SuperTestCase):
         response = self.app.post(
             "/api/v1/bucketlists/200/items/", data=item_data,
             headers=self.make_token())
-        msg = str(response.json['message'])
-        self.assertEqual(
-            msg, 'A bucketlist with the ID provided does not exist!')
-        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.status_code, 204)
 
     def test_creation_of_item_in_other_users_bucketlist(self):
         item_data = {"name": "itest8", "description": "call up the hommies"}
@@ -254,9 +247,7 @@ class TestEndPoints(SuperTestCase):
                      "description": "take guitar classes"}
         response = self.app.put(
             "/api/v1/bucketlists/100/items/100", headers=self.make_token())
-        msg = str(response.json['message'])
-        self.assertEqual(msg, 'The bucketlist or item does not exist')
-        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.status_code, 204)
 
     def test_invalid_url_on_item_request(self):
         response = self.app.get("/api/v1/bucketlists/1/items/",
@@ -268,9 +259,7 @@ class TestEndPoints(SuperTestCase):
     def test_item_request_on_none_existent_bucketlist(self):
         response = self.app.get("/api/v1/bucketlists/4/items/1",
                                 headers=self.make_token())
-        msg = str(response.json['message'])
-        self.assertEqual(msg, 'the bucketlist does not exist')
-        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.status_code, 204)
 
     def test_invalid_credentials_on_item_request(self):
         response = self.app.get("/api/v1/bucketlists/1/items/1",
@@ -282,9 +271,7 @@ class TestEndPoints(SuperTestCase):
     def test_requesting_a_none_existent_item(self):
         response = self.app.get("/api/v1/bucketlists/1/items/20",
                                 headers=self.make_token())
-        msg = str(response.json['message'])
-        self.assertEqual(msg, 'The item does not exist')
-        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.status_code, 204)
 
     def test_deletion_of_an_item(self):
         """ Test for deletion of an item  """
@@ -308,9 +295,7 @@ class TestEndPoints(SuperTestCase):
         response = self.app.delete("/api/v1/bucketlists/2/items/300",
                                    headers=self.make_token(),
                                    content_type='application/json')
-        msg = str(response.json['message'])
-        self.assertEqual(msg, 'The item does not exist')
-        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.status_code, 204)
 
     def test_deleting_an_item_with_invalid_url(self):
         response = self.app.delete("/api/v1/bucketlists/2/items/",
