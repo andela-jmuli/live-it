@@ -3,6 +3,7 @@
 
 [![Build Status](https://travis-ci.org/andela-jmuli/live-it.svg?branch=bucketlists-endpoints)](https://travis-ci.org/andela-jmuli/live-it)
 [![Coverage Status](https://coveralls.io/repos/github/andela-jmuli/live-it/badge.svg?branch=users-v0.1)](https://coveralls.io/github/andela-jmuli/live-it?branch=users-v0.1)
+[![Code Health](https://landscape.io/github/andela-jmuli/live-it/master/landscape.svg?style=flat)](https://landscape.io/github/andela-jmuli/live-it/master)
 [![license](https://img.shields.io/github/license/mashape/apistatus.svg)]()
 ## Introduction:
 live-it is a bucket list RESTful API that allows creating and editing of bucket lists -- These are a number of experiences or achievements that a person hopes to have or accomplish during their lifetime.  
